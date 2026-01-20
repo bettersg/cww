@@ -16,6 +16,10 @@ import {
   MoreHorizontal,
   History,
   CheckCircle,
+  User,
+  LogOut,
+  KeyRound,
+  Menu,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Label } from "./components/ui/label";
@@ -57,6 +61,7 @@ import { Toaster } from "./components/ui/sonner";
 import { PantryKeeperLogo } from "./components/PantryKeeperLogo";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { api } from "./utils/api";
+import { checkServerHealth } from "./services/api/client";
 import { LoadingSkeleton } from "./components/LoadingSkeleton";
 import { exportToCSV } from "./utils/exportHelpers";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
@@ -64,19 +69,18 @@ import { HowToGuide } from "./components/HowToGuide";
 import { AuditLogFeature, useAuditLog } from "./features/audit-log";
 import { StockingFeature, useStockOut } from "./features/stocking";
 import { InventoryFeature, useInventory } from "./features/inventory";
-import { 
-  useSearchFilter, 
-  useFilteredItems, 
-  FilterBar, 
-  StatsCards 
+import {
+  useSearchFilter,
+  useFilteredItems,
+  FilterBar,
+  StatsCards,
 } from "./features/search-filter";
 import { InventoryDisplay } from "./features/inventory-display";
 import { UserGuideDialog } from "./features/user-guide";
 import { useExportActions } from "./features/export-actions";
-import { 
-  getItemStatus, 
-  calculateStats 
-} from "./utils/inventoryHelpers";
+import { getItemStatus, calculateStats } from "./utils/inventoryHelpers";
+import { AuthPages } from "./components/auth/AuthPages";
+import { ChangePasswordDialog } from "./components/auth/ChangePasswordDialog";
 
 interface InventoryItem {
   id: string;
@@ -94,13 +98,50 @@ interface InventoryItem {
 }
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string } | null>(null);
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [userGuideOpen, setUserGuideOpen] = useState(false);
+  const [showHowToGuide, setShowHowToGuide] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+
+  // Search & Filter feature (extracted)
+  const searchFilter = useSearchFilter();
+
+  // Audit log feature (extracted)
+  const auditLog = useAuditLog();
+
+  // Stocking feature (extracted)
+  const stockOut = useStockOut();
+
+  // Inventory feature (extracted)
+  const inventory = useInventory();
+
+  // Export actions feature (extracted)
+  const exportActions = useExportActions();
+
+  const handleLogin = (user: { name: string; email: string }) => {
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+  };
+
+  const handleSignOut = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    setItems([]);
+  };
 
   // Load items from backend on mount
   useEffect(() => {
     const loadItems = async () => {
+      // Only load items if authenticated
+      if (!isAuthenticated) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         const fetchedItems = await api.getAllItems();
@@ -114,25 +155,7 @@ export default function App() {
     };
 
     loadItems();
-  }, []);
-
-  const [userGuideOpen, setUserGuideOpen] = useState(false);
-  const [showHowToGuide, setShowHowToGuide] = useState(false);
-
-  // Search & Filter feature (extracted)
-  const searchFilter = useSearchFilter();
-
-  // Audit log feature (extracted)
-  const auditLog = useAuditLog();
-  
-  // Stocking feature (extracted)
-  const stockOut = useStockOut();
-  
-  // Inventory feature (extracted)
-  const inventory = useInventory();
-  
-  // Export actions feature (extracted)
-  const exportActions = useExportActions();
+  }, [isAuthenticated]);
 
   // Recalculate status dynamically based on current date and quantity
   const itemsWithCurrentStatus = useMemo(() => {
@@ -148,6 +171,26 @@ export default function App() {
     searchTerm: searchFilter.searchTerm,
     filterStatus: searchFilter.filterStatus,
   });
+
+  // Calculate stats using shared utility
+  const statsData = useMemo(() => {
+    return calculateStats(itemsWithCurrentStatus);
+  }, [itemsWithCurrentStatus]);
+
+  // If not authenticated, show login page
+  if (!isAuthenticated) {
+    return <AuthPages onLogin={handleLogin} />;
+  }
+
+  // Show loading skeleton while loading
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  // Show How To Guide page if active
+  if (showHowToGuide) {
+    return <HowToGuide onBack={() => setShowHowToGuide(false)} />;
+  }
 
   const generateBatchNumber = (name: string) => {
     const prefix = name
@@ -172,42 +215,111 @@ export default function App() {
     }
   };
 
-  // Calculate stats using shared utility
-  const statsData = useMemo(() => {
-    return calculateStats(itemsWithCurrentStatus);
-  }, [itemsWithCurrentStatus]);
-
-  // Show loading skeleton while loading
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  // Show How To Guide page if active
-  if (showHowToGuide) {
-    return <HowToGuide onBack={() => setShowHowToGuide(false)} />;
-  }
-
   return (
     <div className="min-h-screen bg-background p-6 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className="bg-background flex items-center justify-center shrink-0">
-              <PantryKeeperLogo className="h-12 w-auto" />
+          {/* Logo, Title, and Mobile Menu */}
+          <div className="flex items-center justify-between gap-3 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="bg-background flex items-center justify-center shrink-0">
+                <PantryKeeperLogo className="h-8 md:h-12 w-auto" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+                  PantryKeeper
+                </h1>
+                <p className="text-gray-600 mt-0.5 text-xs md:text-sm leading-snug">
+                  Food Donation Management
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
-                PantryKeeper
-              </h1>
-              <p className="text-gray-600 mt-0.5 text-sm leading-snug">
-                Food Donation Management
-              </p>
+
+            {/* Mobile Menu - Now in same row */}
+            <div className="md:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10"
+                    title="Menu"
+                  >
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  {/* User Profile Section */}
+                  <div className="px-2 py-1.5 text-sm border-b">
+                    <div className="flex items-center gap-2 mb-1">
+                      <User className="w-4 h-4 text-gray-500" />
+                      <p className="font-medium text-gray-900">{currentUser?.name}</p>
+                    </div>
+                    <p className="text-xs text-gray-500 pl-6">{currentUser?.email}</p>
+                  </div>
+                  
+                  <DropdownMenuItem onClick={() => setShowChangePassword(true)}>
+                    <KeyRound className="w-4 h-4 mr-2" />
+                    Change Password
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem onClick={() => exportActions.handleExport(filteredItems.length > 0 ? filteredItems : itemsWithCurrentStatus)}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export to CSV
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem onClick={auditLog.openDialog}>
+                    <History className="w-4 h-4 mr-2" />
+                    Audit Log
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem onClick={() => setShowHowToGuide(true)}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    How To Guide
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600 border-t">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
           {/* Desktop Buttons */}
           <div className="hidden md:flex items-center gap-2">
+            {/* User Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-11 px-3 gap-2"
+                  title="User Profile"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="text-sm font-medium">{currentUser?.name}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5 text-sm">
+                  <p className="font-medium text-gray-900">{currentUser?.name}</p>
+                  <p className="text-xs text-gray-500">{currentUser?.email}</p>
+                </div>
+                <DropdownMenuItem onClick={() => setShowChangePassword(true)}>
+                  <KeyRound className="w-4 h-4 mr-2" />
+                  Change Password
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="w-px h-8 bg-gray-300 mx-1" />
+            
             <Button
               variant="ghost"
               size="icon"
@@ -217,7 +329,7 @@ export default function App() {
             >
               <Download className="w-4 h-4" />
             </Button>
-            
+
             {/* More menu dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -241,7 +353,7 @@ export default function App() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             <div className="w-px h-8 bg-gray-300 mx-1" />
             <Button
               variant="outline"
@@ -280,7 +392,7 @@ export default function App() {
           </div>
 
           {/* Inventory Feature - Extracted to /features/inventory */}
-          <InventoryFeature 
+          <InventoryFeature
             hook={inventory}
             items={items}
             generateBatchNumber={generateBatchNumber}
@@ -291,10 +403,10 @@ export default function App() {
           />
 
           {/* Old dialog removed - now using InventoryFeature component */}
-          
+
           {/* Stocking Feature - Extracted to /features/stocking */}
-          <StockingFeature 
-            hook={stockOut} 
+          <StockingFeature
+            hook={stockOut}
             items={itemsWithCurrentStatus}
             onStockOutComplete={handleStockOutComplete}
           />
@@ -332,11 +444,11 @@ export default function App() {
       </div>
 
       {/* Delete Confirmation Dialog now in InventoryFeature */}
-      
+
       <Toaster richColors position="top-right" />
 
       {/* User Guide Feature - Extracted to /features/user-guide */}
-      <UserGuideDialog 
+      <UserGuideDialog
         open={userGuideOpen}
         onOpenChange={setUserGuideOpen}
       />
@@ -350,7 +462,7 @@ export default function App() {
                 © 2026 Better.sg. All rights reserved.
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Developed, Designed by Reuben Chan (Better.sg)
+                Better.sg
               </p>
             </div>
 
@@ -368,6 +480,12 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Change Password Dialog */}
+      <ChangePasswordDialog
+        open={showChangePassword}
+        onOpenChange={setShowChangePassword}
+      />
     </div>
   );
 }

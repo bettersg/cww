@@ -17,6 +17,22 @@ export const getHeaders = (): HeadersInit => ({
 });
 
 /**
+ * Check if the API server is healthy
+ */
+export async function checkServerHealth(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Server health check failed:', error);
+    return false;
+  }
+}
+
+/**
  * Generic API request handler with error handling
  * @param endpoint - API endpoint path
  * @param options - Fetch options
@@ -42,6 +58,12 @@ export async function apiRequest<T>(
 
     return await response.json();
   } catch (error) {
+    // Check if it's a network error (server not responding)
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error(`API Error [${endpoint}]: Server not responding. The Supabase Edge Function may not be deployed.`);
+      throw new Error('Server not responding. Please ensure the Supabase Edge Function is deployed.');
+    }
+    
     console.error(`API Error [${endpoint}]:`, error);
     throw error;
   }

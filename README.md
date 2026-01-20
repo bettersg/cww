@@ -1,49 +1,11 @@
-# PantryKeeper-CWW
 
-This is a code bundle for PantryKeeper-CWW. The original project is available at https://www.figma.com/design/l0FmqcJTU12RrsQgqoWbze/PantryKeeper-CWW.
+  # PantryKeeper-CWW
 
-## Running the code
+  This is a code bundle for PantryKeeper-CWW. The original project is available at https://www.figma.com/design/l0FmqcJTU12RrsQgqoWbze/PantryKeeper-CWW.
 
-Run `npm i` to install the dependencies.
+  ## Running the code
 
-Run `npm run dev` to start the development server.
+  Run `npm i` to install the dependencies.
 
-For running the code locally in a container:
-
-```sh
-docker build -f Dockerfile.dev -t <image>:<tag>
-
-docker run -d -p 3000:3000 <image>:<tag>
-```
-
-## Deployment
-
-For frontend:
-Hosted in firebase, you need access to the project.
-Then:
-```sh
-firebase login
-firebase deploy --only-hosting
-```
-
-This deploys the frontend
-
-For backend:
-Functions and database are in supabase. If you need to redeploy functions or execute migrations:
-
-```sh
-npm install -g supabase
-supabase login
-supabase init
-supabase link --project-ref <your-project-ref>
-supabase functions deploy
-# or
-supabase functions deploy <function name>
-```
-
-If you need to execute migrations that have been created in the supabase/migrations folder:
-```sh
-supabase db push
-```
-
-Otherwise just execute the sql in supabase (migration files are preferred for traceability).
+  Run `npm run dev` to start the development server.
+  
