@@ -2,3 +2,5 @@
 
 export const projectId = "qmcbbwpwvezvrihtsyqr"
 export const publicAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY2Jid3B3dmV6dnJpaHRzeXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTM0MTYsImV4cCI6MjA3NzkyOTQxNn0.06vVpynpQBsdcPULpd3V7BLWOZSMR-f39M1at8lcGVk"
+
+export const FORGOT_PASSWORD_REDIRECT = `${window.location.origin}/reset-password`;

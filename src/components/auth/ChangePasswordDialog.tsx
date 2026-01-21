@@ -11,7 +11,9 @@ import {
 } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Lock, CheckCircle } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner"; // Assuming sonner is installed as 'sonner' not 'sonner@2.0.3' based on other files, but file viewer showed @2.0.3. I'll stick to what was there or what matches other files. Other files typically use 'sonner' or just import. Layout uses 'sonner'.
+import { supabase } from "../../utils/supabase/client";
+import { useAuth } from "./AuthContext";
 
 interface ChangePasswordDialogProps {
   open: boolean;
@@ -19,12 +21,14 @@ interface ChangePasswordDialogProps {
 }
 
 export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialogProps) {
+  const { user } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     // Simple validation
     if (!oldPassword || !newPassword || !confirmPassword) {
       toast.error("Please fill in all fields");
@@ -36,14 +40,48 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
       return;
     }
 
-    // Show success state
-    setShowSuccess(true);
-    toast.success("Password changed successfully");
+    if (!user?.email) {
+      toast.error("User email not found");
+      return;
+    }
 
-    // Reset and close after delay
-    setTimeout(() => {
-      handleClose();
-    }, 2000);
+    try {
+      setLoading(true);
+      // Verify old password by signing in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: oldPassword,
+      });
+
+      if (signInError) {
+        toast.error("Incorrect current password");
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Show success state
+      setShowSuccess(true);
+      toast.success("Password changed successfully");
+
+      // Reset and close after delay
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      toast.error(error.message || "Failed to change password");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -142,9 +180,9 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 <Button
                   type="submit"
                   className="flex-1 bg-[#F58220] hover:bg-[#d47020] text-white"
-                  disabled={!oldPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                  disabled={loading || !oldPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
                 >
-                  Change Password
+                  {loading ? "Changing..." : "Change Password"}
                 </Button>
               </div>
             </form>
