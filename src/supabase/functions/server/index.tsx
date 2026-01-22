@@ -49,12 +49,12 @@ function sanitizePrefix(prefix: string): string {
 }
 
 // Health check endpoint
-app.get("/make-server-991766ee/health", (c) => {
+app.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
 
 // Get all inventory items
-app.get("/make-server-991766ee/items", async (c) => {
+app.get("/items", async (c) => {
   try {
     const sanitizedPrefix = sanitizePrefix("inventory:");
     const items = await kv.getByPrefix(sanitizedPrefix);
@@ -67,7 +67,7 @@ app.get("/make-server-991766ee/items", async (c) => {
 });
 
 // Get single inventory item by ID
-app.get("/make-server-991766ee/items/:id", async (c) => {
+app.get("/items/:id", async (c) => {
   try {
     const id = c.req.param("id");
     const item = await kv.get(`inventory:${id}`);
@@ -162,7 +162,7 @@ function validateItemData(data: any, isCreate = false) {
 }
 
 // Create new inventory item
-app.post("/make-server-991766ee/items", async (c) => {
+app.post("/items", async (c) => {
   try {
     const body = await c.req.json();
     
@@ -216,7 +216,7 @@ app.post("/make-server-991766ee/items", async (c) => {
 });
 
 // Update existing inventory item
-app.put("/make-server-991766ee/items/:id", async (c) => {
+app.put("/items/:id", async (c) => {
   try {
     const id = c.req.param("id");
     const body = await c.req.json();
@@ -278,7 +278,7 @@ app.put("/make-server-991766ee/items/:id", async (c) => {
 });
 
 // Delete inventory item
-app.delete("/make-server-991766ee/items/:id", async (c) => {
+app.delete("/items/:id", async (c) => {
   try {
     const id = c.req.param("id");
     
@@ -310,7 +310,7 @@ app.delete("/make-server-991766ee/items/:id", async (c) => {
 });
 
 // Batch distribute items
-app.post("/make-server-991766ee/distribute", async (c) => {
+app.post("/distribute", async (c) => {
   try {
     const body = await c.req.json();
     const { itemIds, quantities, distributedBy } = body;
@@ -372,7 +372,7 @@ app.post("/make-server-991766ee/distribute", async (c) => {
 });
 
 // Stock out items - batch operation to remove quantities from inventory
-app.post("/make-server-991766ee/stock-out", async (c) => {
+app.post("/stock-out", async (c) => {
   try {
     const body = await c.req.json();
     const { items, stockedOutBy } = body;
@@ -468,7 +468,7 @@ app.post("/make-server-991766ee/stock-out", async (c) => {
 });
 
 // Initialize database with sample data (one-time setup)
-app.post("/make-server-991766ee/initialize", async (c) => {
+app.post("/initialize", async (c) => {
   try {
     // Check if already initialized
     const existingItems = await kv.getByPrefix("inventory:");
@@ -507,7 +507,7 @@ app.post("/make-server-991766ee/initialize", async (c) => {
 });
 
 // Get all changelog entries with pagination and filtering
-app.get("/make-server-991766ee/changelog", async (c) => {
+app.get("/changelog", async (c) => {
   try {
     // SECURITY: Require authentication for audit log access
     const accessToken = c.req.header('Authorization')?.split(' ')[1];
@@ -598,7 +598,7 @@ app.get("/make-server-991766ee/changelog", async (c) => {
 });
 
 // Export changelog as CSV
-app.get("/make-server-991766ee/changelog/export", async (c) => {
+app.get("/changelog/export", async (c) => {
   try {
     // SECURITY: Require authentication for audit log export
     const accessToken = c.req.header('Authorization')?.split(' ')[1];
@@ -708,7 +708,7 @@ app.get("/make-server-991766ee/changelog/export", async (c) => {
 });
 
 // Clear all changelog entries (destructive operation)
-app.delete("/make-server-991766ee/changelog", async (c) => {
+app.delete("/changelog", async (c) => {
   try {
     // SECURITY: Require authentication for destructive audit log operations
     const accessToken = c.req.header('Authorization')?.split(' ')[1];

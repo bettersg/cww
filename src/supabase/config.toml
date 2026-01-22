@@ -1,0 +1,9 @@
+# Supabase Configuration for PantryKeeper
+
+[api]
+enabled = true
+port = 54321
+max_rows = 1000
+
+[functions.make-server-991766ee]
+verify_jwt = false
