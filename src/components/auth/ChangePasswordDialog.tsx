@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "../ui/alert";
 import { Lock, CheckCircle } from "lucide-react";
 import { toast } from "sonner"; // Assuming sonner is installed as 'sonner' not 'sonner@2.0.3' based on other files, but file viewer showed @2.0.3. I'll stick to what was there or what matches other files. Other files typically use 'sonner' or just import. Layout uses 'sonner'.
 import { supabase } from "../../utils/supabase/client";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface ChangePasswordDialogProps {
   open: boolean;

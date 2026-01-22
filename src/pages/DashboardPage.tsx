@@ -38,7 +38,7 @@ import { UserGuideDialog } from "../features/user-guide";
 import { useExportActions } from "../features/export-actions";
 import { getItemStatus, calculateStats } from "../utils/inventoryHelpers";
 import { ChangePasswordDialog } from "../components/auth/ChangePasswordDialog";
-import { useAuth } from "../components/auth/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 interface InventoryItem {
@@ -56,7 +56,7 @@ interface InventoryItem {
     expiringThreshold: number;
 }
 
-export default function Dashboard() {
+export default function DashboardPage() {
     const { user: currentUser, signOut } = useAuth();
     const [items, setItems] = useState<InventoryItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);

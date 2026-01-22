@@ -8,7 +8,7 @@ import { PantryKeeperLogo } from "../components/PantryKeeperLogo";
 import { Mail, Lock } from "lucide-react";
 import { supabase } from "../utils/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../components/auth/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export function AuthPage() {
     const [email, setEmail] = useState("");
