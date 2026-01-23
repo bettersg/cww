@@ -18,6 +18,7 @@ export function StockingFeature({ hook, items, onStockOutComplete }: StockingFea
     }
   };
 
+
   return (
     <>
       <StockOutDialog hook={hook} items={items} />

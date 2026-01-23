@@ -1,29 +1,35 @@
-/**
- * API Client Configuration
- * Base configuration for all API requests to Supabase Edge Functions
- */
-
-import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { projectId } from '../../utils/supabase/info';
+import { supabase } from '../../utils/supabase/client';
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-991766ee`;
 
 /**
  * Get standard headers for API requests
- * Includes Content-Type and Authorization with public anon key
+ * Includes Content-Type and Authorization with user access token
  */
-export const getHeaders = (): HeadersInit => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${publicAnonKey}`,
-});
+export const getHeaders = async (): Promise<HeadersInit> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('No active session found. Please log in.');
+  }
+
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${accessToken}`,
+  };
+};
 
 /**
- * Check if the API server is healthy
+ * Check if the API server is healthy and user is authenticated
  */
 export async function checkServerHealth(): Promise<boolean> {
   try {
+    const headers = await getHeaders();
     const response = await fetch(`${API_BASE_URL}/health`, {
       method: 'GET',
-      headers: getHeaders(),
+      headers,
     });
     return response.ok;
   } catch (error) {
@@ -43,10 +49,12 @@ export async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   try {
+    const headers = await getHeaders();
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
-        ...getHeaders(),
+        ...headers,
         ...options.headers,
       },
     });
@@ -63,7 +71,7 @@ export async function apiRequest<T>(
       console.error(`API Error [${endpoint}]: Server not responding. The Supabase Edge Function may not be deployed.`);
       throw new Error('Server not responding. Please ensure the Supabase Edge Function is deployed.');
     }
-    
+
     console.error(`API Error [${endpoint}]:`, error);
     throw error;
   }
