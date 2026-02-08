@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { api } from '../../../utils/api';
 import { toast } from 'sonner@2.0.3';
 import type { ChangelogEntry } from '../../../types';
+import { apiDownloadRequest, apiRequest } from '../../../services/api/client';
 
 export function useAuditLog() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -53,7 +54,7 @@ export function useAuditLog() {
    */
   const exportChangelog = () => {
     const exportUrl = api.getChangelogExportUrl();
-    window.open(exportUrl, '_blank');
+    apiDownloadRequest(exportUrl);
     toast.success('Audit log export started!');
   };
 
