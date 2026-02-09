@@ -21,7 +21,7 @@ app.use(
     origin: allowedOrigins ? allowedOrigins.split(',') : "*",
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    exposeHeaders: ["Content-Length"],
+    exposeHeaders: ["Content-Length", "Content-Disposition"],
     maxAge: 600,
   }),
 );
@@ -30,7 +30,7 @@ app.use(
 function handleError(error: unknown, userMessage: string, statusCode = 500) {
   // Always log full error for debugging
   console.error(`[ERROR] ${userMessage}:`, error);
-  
+
   // In production, hide internal details
   const isDev = Deno.env.get('ENVIRONMENT') === 'development';
   return {
@@ -71,11 +71,11 @@ app.get("/items/:id", async (c) => {
   try {
     const id = c.req.param("id");
     const item = await kv.get(`inventory:${id}`);
-    
+
     if (!item) {
       return c.json({ error: "Item not found" }, 404);
     }
-    
+
     return c.json({ item });
   } catch (error) {
     const errorResponse = handleError(error, "Failed to fetch inventory item");
@@ -86,14 +86,14 @@ app.get("/items/:id", async (c) => {
 // Validation helper
 function validateItemData(data: any, isCreate = false) {
   const errors: string[] = [];
-  
+
   // Name validation
   if (!data.name || typeof data.name !== 'string' || !data.name.trim()) {
     errors.push("name is required and must be a non-empty string");
   } else if (data.name.length > 200) {
     errors.push("name must not exceed 200 characters");
   }
-  
+
   // Quantity validation
   if (data.quantity === undefined || data.quantity === null) {
     errors.push("quantity is required");
@@ -104,14 +104,14 @@ function validateItemData(data: any, isCreate = false) {
   } else if (data.quantity > 999999) {
     errors.push("quantity is unrealistically large (max: 999999)");
   }
-  
+
   // Description validation
   if (data.description && typeof data.description !== 'string') {
     errors.push("description must be a string");
   } else if (data.description && data.description.length > 2000) {
     errors.push("description must not exceed 2000 characters");
   }
-  
+
   // Expiry validation (can be null)
   if (data.expiry !== null && data.expiry !== undefined) {
     if (typeof data.expiry !== 'string') {
@@ -120,35 +120,35 @@ function validateItemData(data: any, isCreate = false) {
       errors.push("expiry must be in YYYY-MM-DD format");
     }
   }
-  
+
   // Status validation
   const validStatuses = ["fresh", "expiring", "expired", "depleted"];
   if (data.status && !validStatuses.includes(data.status)) {
     errors.push(`status must be one of: ${validStatuses.join(", ")}`);
   }
-  
+
   // Batch number validation (required for create)
   if (isCreate && (!data.batchNumber || typeof data.batchNumber !== 'string')) {
     errors.push("batchNumber is required");
   } else if (data.batchNumber && data.batchNumber.length > 50) {
     errors.push("batchNumber must not exceed 50 characters");
   }
-  
+
   // Received date validation (required for create)
   if (isCreate && (!data.receivedDate || typeof data.receivedDate !== 'string')) {
     errors.push("receivedDate is required");
   }
-  
+
   // Donor validation
   if (data.donor && data.donor.length > 200) {
     errors.push("donor name must not exceed 200 characters");
   }
-  
+
   // Modified by validation
   if (data.lastModifiedBy && data.lastModifiedBy.length > 100) {
     errors.push("lastModifiedBy must not exceed 100 characters");
   }
-  
+
   // Expiring threshold validation
   if (data.expiringThreshold !== undefined) {
     if (typeof data.expiringThreshold !== 'number' || !Number.isInteger(data.expiringThreshold)) {
@@ -157,7 +157,7 @@ function validateItemData(data: any, isCreate = false) {
       errors.push("expiringThreshold must be between 1 and 365 days");
     }
   }
-  
+
   return errors;
 }
 
@@ -165,19 +165,19 @@ function validateItemData(data: any, isCreate = false) {
 app.post("/items", async (c) => {
   try {
     const body = await c.req.json();
-    
+
     // Validate input
     const validationErrors = validateItemData(body, true);
     if (validationErrors.length > 0) {
-      return c.json({ 
-        error: "Validation failed", 
-        validationErrors 
+      return c.json({
+        error: "Validation failed",
+        validationErrors
       }, 400);
     }
-    
+
     // Generate secure server-side ID (ignore client-provided ID)
     const id = crypto.randomUUID();
-    
+
     const item = {
       id,
       name: body.name.trim(),
@@ -192,10 +192,10 @@ app.post("/items", async (c) => {
       lastModifiedDate: body.lastModifiedDate || new Date().toISOString(),
       expiringThreshold: body.expiringThreshold || 7,
     };
-    
+
     await kv.set(`inventory:${id}`, item);
     console.log(`Created inventory item: ${id} - ${item.name}`);
-    
+
     // Create changelog entry for item addition
     await changelog.createChangelogEntry(
       "ITEM_ADDED",
@@ -207,7 +207,7 @@ app.post("/items", async (c) => {
         snapshot: changelog.createItemSnapshot(item),
       }
     );
-    
+
     return c.json({ item, message: "Item created successfully" }, 201);
   } catch (error) {
     const errorResponse = handleError(error, "Failed to create inventory item");
@@ -220,41 +220,41 @@ app.put("/items/:id", async (c) => {
   try {
     const id = c.req.param("id");
     const body = await c.req.json();
-    
+
     const existingItem = await kv.get(`inventory:${id}`);
     if (!existingItem) {
       return c.json({ error: "Item not found" }, 404);
     }
-    
+
     // Validate updates
     const validationErrors = validateItemData(body, false);
     if (validationErrors.length > 0) {
-      return c.json({ 
-        error: "Validation failed", 
-        validationErrors 
+      return c.json({
+        error: "Validation failed",
+        validationErrors
       }, 400);
     }
-    
+
     // Sanitize string fields if present
     const updates = { ...body };
     if (updates.name) updates.name = updates.name.trim();
     if (updates.description) updates.description = updates.description.trim();
     if (updates.donor) updates.donor = updates.donor.trim();
     if (updates.lastModifiedBy) updates.lastModifiedBy = updates.lastModifiedBy.trim();
-    
+
     const updatedItem = {
       ...existingItem,
       ...updates,
       id, // Ensure ID doesn't change
       lastModifiedDate: new Date().toISOString(),
     };
-    
+
     // Track what changed
     const fieldsChanged = changelog.getChangedFields(existingItem, updatedItem);
-    
+
     await kv.set(`inventory:${id}`, updatedItem);
     console.log(`Updated inventory item: ${id}`);
-    
+
     // Create changelog entry if fields actually changed
     if (fieldsChanged.length > 0) {
       await changelog.createChangelogEntry(
@@ -269,7 +269,7 @@ app.put("/items/:id", async (c) => {
         }
       );
     }
-    
+
     return c.json({ item: updatedItem, message: "Item updated successfully" });
   } catch (error) {
     const errorResponse = handleError(error, "Failed to update inventory item");
@@ -281,12 +281,12 @@ app.put("/items/:id", async (c) => {
 app.delete("/items/:id", async (c) => {
   try {
     const id = c.req.param("id");
-    
+
     const existingItem = await kv.get(`inventory:${id}`);
     if (!existingItem) {
       return c.json({ error: "Item not found" }, 404);
     }
-    
+
     // Create changelog entry before deletion
     await changelog.createChangelogEntry(
       "ITEM_DELETED",
@@ -298,10 +298,10 @@ app.delete("/items/:id", async (c) => {
         snapshot: changelog.createItemSnapshot(existingItem),
       }
     );
-    
+
     await kv.del(`inventory:${id}`);
     console.log(`Deleted inventory item: ${id}`);
-    
+
     return c.json({ message: "Item deleted successfully" });
   } catch (error) {
     const errorResponse = handleError(error, "Failed to delete inventory item");
@@ -314,35 +314,35 @@ app.post("/distribute", async (c) => {
   try {
     const body = await c.req.json();
     const { itemIds, quantities, distributedBy } = body;
-    
+
     if (!itemIds || !quantities || !Array.isArray(itemIds) || !Array.isArray(quantities)) {
       return c.json({ error: "Invalid request: itemIds and quantities must be arrays" }, 400);
     }
-    
+
     if (itemIds.length !== quantities.length) {
       return c.json({ error: "itemIds and quantities arrays must have the same length" }, 400);
     }
-    
+
     const updatedItems = [];
     const errors = [];
-    
+
     for (let i = 0; i < itemIds.length; i++) {
       const id = itemIds[i];
       const quantityToDistribute = quantities[i];
-      
+
       try {
         const item = await kv.get(`inventory:${id}`);
-        
+
         if (!item) {
           errors.push({ id, error: "Item not found" });
           continue;
         }
-        
+
         if (item.quantity < quantityToDistribute) {
           errors.push({ id, error: `Insufficient quantity. Available: ${item.quantity}, Requested: ${quantityToDistribute}` });
           continue;
         }
-        
+
         const newQuantity = item.quantity - quantityToDistribute;
         const updatedItem = {
           ...item,
@@ -351,7 +351,7 @@ app.post("/distribute", async (c) => {
           lastModifiedBy: distributedBy || "System",
           lastModifiedDate: new Date().toISOString(),
         };
-        
+
         await kv.set(`inventory:${id}`, updatedItem);
         updatedItems.push(updatedItem);
         console.log(`Distributed ${quantityToDistribute} units from item ${id}. New quantity: ${newQuantity}`);
@@ -359,7 +359,7 @@ app.post("/distribute", async (c) => {
         errors.push({ id, error: String(itemError) });
       }
     }
-    
+
     return c.json({
       message: "Distribution completed",
       updatedItems,
@@ -376,50 +376,50 @@ app.post("/stock-out", async (c) => {
   try {
     const body = await c.req.json();
     const { items, stockedOutBy } = body;
-    
+
     // items is an array of { id: string, quantity: number }
     if (!items || !Array.isArray(items) || items.length === 0) {
       return c.json({ error: "Invalid request: items must be a non-empty array" }, 400);
     }
-    
+
     if (!stockedOutBy || typeof stockedOutBy !== 'string') {
       return c.json({ error: "stockedOutBy is required" }, 400);
     }
-    
+
     const updatedItems = [];
     const errors = [];
-    
+
     for (const { id, quantity: quantityToStockOut } of items) {
       try {
         if (!id || quantityToStockOut === undefined || quantityToStockOut <= 0) {
           errors.push({ id, error: "Invalid item: id and positive quantity required" });
           continue;
         }
-        
+
         const item = await kv.get(`inventory:${id}`);
-        
+
         if (!item) {
           errors.push({ id, error: "Item not found" });
           continue;
         }
-        
+
         if (item.quantity < quantityToStockOut) {
-          errors.push({ 
-            id, 
+          errors.push({
+            id,
             name: item.name,
-            error: `Insufficient quantity. Available: ${item.quantity}, Requested: ${quantityToStockOut}` 
+            error: `Insufficient quantity. Available: ${item.quantity}, Requested: ${quantityToStockOut}`
           });
           continue;
         }
-        
+
         const newQuantity = item.quantity - quantityToStockOut;
-        
+
         // Recalculate status based on new quantity
         let newStatus = item.status;
         if (newQuantity === 0) {
           newStatus = "depleted";
         }
-        
+
         const updatedItem = {
           ...item,
           quantity: newQuantity,
@@ -427,11 +427,11 @@ app.post("/stock-out", async (c) => {
           lastModifiedBy: stockedOutBy,
           lastModifiedDate: new Date().toISOString(),
         };
-        
+
         await kv.set(`inventory:${id}`, updatedItem);
         updatedItems.push(updatedItem);
         console.log(`Stocked out ${quantityToStockOut} units from item ${id} (${item.name}). New quantity: ${newQuantity}`);
-        
+
         // Create changelog entry for stock out
         await changelog.createChangelogEntry(
           "STOCK_OUT",
@@ -448,14 +448,14 @@ app.post("/stock-out", async (c) => {
         errors.push({ id, error: String(itemError) });
       }
     }
-    
+
     if (errors.length > 0 && updatedItems.length === 0) {
-      return c.json({ 
-        error: "Stock out failed for all items", 
-        errors 
+      return c.json({
+        error: "Stock out failed for all items",
+        errors
       }, 400);
     }
-    
+
     return c.json({
       message: `Successfully stocked out ${updatedItems.length} items`,
       updatedItems,
@@ -475,7 +475,7 @@ app.post("/initialize", async (c) => {
     if (existingItems && existingItems.length > 0) {
       return c.json({ message: "Database already initialized", itemCount: existingItems.length });
     }
-    
+
     // Sample data - same as the mock data from App.tsx
     const sampleItems = [
       {
@@ -494,10 +494,10 @@ app.post("/initialize", async (c) => {
       },
       // You can add more sample items here if needed
     ];
-    
+
     const keys = sampleItems.map(item => `inventory:${item.id}`);
     await kv.mset(keys, sampleItems);
-    
+
     console.log(`Initialized database with ${sampleItems.length} sample items`);
     return c.json({ message: "Database initialized successfully", itemCount: sampleItems.length });
   } catch (error) {
@@ -511,27 +511,27 @@ app.get("/changelog", async (c) => {
   try {
     // SECURITY: Require authentication for audit log access
     const accessToken = c.req.header('Authorization')?.split(' ')[1];
-    
+
     if (!accessToken) {
       return c.json({ error: "Authentication required to access audit log" }, 401);
     }
-    
+
     // SECURITY: Rate limiting - max 20 requests per minute
     const clientIp = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
     if (!rateLimit.checkRateLimit(`changelog:${clientIp}`, 20, 60 * 1000)) {
-      return c.json({ 
+      return c.json({
         error: "Rate limit exceeded",
         message: "Too many requests. Please try again later."
       }, 429);
     }
-    
+
     // TODO: Add role-based access control
     // Example: Only allow admin/manager roles to access audit logs
     // const { data: { user }, error } = await supabase.auth.getUser(accessToken);
     // if (!user || !['admin', 'manager'].includes(user.user_metadata?.role)) {
     //   return c.json({ error: "Insufficient permissions" }, 403);
     // }
-    
+
     // Get query parameters for filtering and pagination
     const page = parseInt(c.req.query('page') || '1');
     const limit = Math.min(parseInt(c.req.query('limit') || '50'), 100); // Max 100 per page
@@ -540,9 +540,9 @@ app.get("/changelog", async (c) => {
     const endDate = c.req.query('endDate');
     const performedBy = c.req.query('performedBy'); // Filter by user
     const itemId = c.req.query('itemId'); // Filter by item
-    
+
     let entries = await changelog.getAllChangelogEntries();
-    
+
     // Apply filters
     if (action) {
       entries = entries.filter(e => e.action === action);
@@ -559,13 +559,13 @@ app.get("/changelog", async (c) => {
     if (itemId) {
       entries = entries.filter(e => e.itemId === itemId);
     }
-    
+
     // Calculate pagination
     const totalCount = entries.length;
     const totalPages = Math.ceil(totalCount / limit);
     const offset = (page - 1) * limit;
     const paginatedEntries = entries.slice(offset, offset + limit);
-    
+
     // SECURITY: Create meta-audit entry
     await metaAudit.createMetaAuditEntry("AUDIT_VIEWED", {
       ipAddress: clientIp,
@@ -576,11 +576,11 @@ app.get("/changelog", async (c) => {
         resultCount: paginatedEntries.length
       }
     });
-    
+
     console.log(`[AUDIT] Changelog accessed at ${new Date().toISOString()} from ${clientIp}`);
     console.log(`Fetched page ${page} of ${totalPages} (${paginatedEntries.length} of ${totalCount} entries)`);
-    
-    return c.json({ 
+
+    return c.json({
       entries: paginatedEntries,
       pagination: {
         page,
@@ -602,22 +602,22 @@ app.get("/changelog/export", async (c) => {
   try {
     // SECURITY: Require authentication for audit log export
     const accessToken = c.req.header('Authorization')?.split(' ')[1];
-    
+
     if (!accessToken) {
       return c.json({ error: "Authentication required to export audit log" }, 401);
     }
-    
+
     // SECURITY: Rate limiting - max 5 exports per hour (stricter for export)
     const clientIp = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
     if (!rateLimit.checkRateLimit(`export:${clientIp}`, 5, 60 * 60 * 1000)) {
-      return c.json({ 
+      return c.json({
         error: "Rate limit exceeded",
         message: "Too many export requests. Please try again later."
       }, 429);
     }
-    
+
     const entries = await changelog.getAllChangelogEntries();
-    
+
     // SECURITY: Create meta-audit entry for export
     await metaAudit.createMetaAuditEntry("AUDIT_EXPORTED", {
       ipAddress: clientIp,
@@ -625,9 +625,9 @@ app.get("/changelog/export", async (c) => {
         entryCount: entries.length
       }
     });
-    
+
     console.log(`[AUDIT] Changelog exported at ${new Date().toISOString()} from ${clientIp}`);
-    
+
     // Helper function to format date in DD/MM/YYYY format
     const formatDate = (isoString: string) => {
       const date = new Date(isoString);
@@ -636,13 +636,13 @@ app.get("/changelog/export", async (c) => {
       const year = date.getFullYear();
       return `${day}/${month}/${year}`;
     };
-    
+
     // Helper function to format time
     const formatTime = (isoString: string) => {
       const date = new Date(isoString);
       return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     };
-    
+
     // Create CSV header
     const headers = [
       "Date",
@@ -655,7 +655,7 @@ app.get("/changelog/export", async (c) => {
       "Current Expiry",
       "Performed By"
     ];
-    
+
     // Create CSV rows
     const rows = entries.map(entry => {
       const date = formatDate(entry.timestamp);
@@ -667,7 +667,7 @@ app.get("/changelog/export", async (c) => {
       const quantity = entry.snapshot?.quantity?.toString() || "";
       const expiry = entry.snapshot?.expiry ? formatDate(entry.snapshot.expiry) : "No expiry";
       const performedBy = entry.performedBy || "System";
-      
+
       return [
         date,
         time,
@@ -680,7 +680,7 @@ app.get("/changelog/export", async (c) => {
         performedBy
       ];
     });
-    
+
     // Combine headers and rows with proper CSV escaping
     const escapeCsvValue = (value: string) => {
       if (value.includes(',') || value.includes('"') || value.includes('\n')) {
@@ -688,12 +688,12 @@ app.get("/changelog/export", async (c) => {
       }
       return value;
     };
-    
+
     const csvContent = [
       headers.map(escapeCsvValue).join(','),
       ...rows.map(row => row.map(escapeCsvValue).join(','))
     ].join('\n');
-    
+
     // Set headers for CSV download
     return new Response(csvContent, {
       headers: {
@@ -712,11 +712,11 @@ app.delete("/changelog", async (c) => {
   try {
     // SECURITY: Require authentication for destructive audit log operations
     const accessToken = c.req.header('Authorization')?.split(' ')[1];
-    
+
     if (!accessToken) {
       return c.json({ error: "Authentication required to clear audit log" }, 401);
     }
-    
+
     // SECURITY: Rate limiting - max 3 clears per hour (very restrictive)
     const clientIp = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
     if (!rateLimit.checkRateLimit(`clear:${clientIp}`, 3, 60 * 60 * 1000)) {
@@ -726,21 +726,21 @@ app.delete("/changelog", async (c) => {
           reason: "Rate limit exceeded"
         }
       });
-      return c.json({ 
+      return c.json({
         error: "Rate limit exceeded",
         message: "Too many clear requests. Please try again later."
       }, 429);
     }
-    
+
     // TODO: CRITICAL - Add role-based access control
     // Only admin/superuser should be able to clear audit logs
     // const { data: { user }, error } = await supabase.auth.getUser(accessToken);
     // if (!user || user.user_metadata?.role !== 'admin') {
     //   return c.json({ error: "Insufficient permissions. Admin role required." }, 403);
     // }
-    
+
     const count = await changelog.clearAllChangelogEntries();
-    
+
     // SECURITY: Create permanent meta-audit entry BEFORE clearing
     await metaAudit.createMetaAuditEntry("AUDIT_CLEARED", {
       ipAddress: clientIp,
@@ -749,15 +749,15 @@ app.delete("/changelog", async (c) => {
         timestamp: new Date().toISOString()
       }
     });
-    
+
     // SECURITY: Log who cleared the audit log
     console.log(`[CRITICAL AUDIT] Changelog cleared at ${new Date().toISOString()} from ${clientIp}`);
     console.log(`[CRITICAL AUDIT] Cleared ${count} entries`);
     console.log(`[CRITICAL AUDIT] WARNING: All audit trail has been removed`);
-    
-    return c.json({ 
-      message: "Changelog cleared successfully", 
-      entriesDeleted: count 
+
+    return c.json({
+      message: "Changelog cleared successfully",
+      entriesDeleted: count
     });
   } catch (error) {
     const errorResponse = handleError(error, "Failed to clear changelog");

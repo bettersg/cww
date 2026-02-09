@@ -37,7 +37,9 @@ export function useFilteredItems({
         item.batchNumber.toLowerCase().includes(searchLower) ||
         (item.donor && item.donor.toLowerCase().includes(searchLower));
       const matchesFilter =
-        filterStatus === "all" || item.status === filterStatus;
+        filterStatus === "all"
+          ? item.status !== "depleted"
+          : item.status === filterStatus;
       return matchesSearch && matchesFilter;
     });
   }, [items, searchTerm, filterStatus]);
