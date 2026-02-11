@@ -82,7 +82,7 @@ Click again to show all items.
 
 #### Dropdown Filter (All Devices)
 Use the dropdown menu to filter by:
-- All Items
+- All Items - All items of Fresh/Expiring Soon/Expired (Except Depleted)
 - Fresh Only
 - Expiring Soon
 - Expired Only
