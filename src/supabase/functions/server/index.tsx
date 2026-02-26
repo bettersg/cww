@@ -6,7 +6,8 @@ import * as changelog from "./changelog.tsx";
 import * as rateLimit from "./rate_limiter.tsx";
 import * as metaAudit from "./meta_audit.tsx";
 
-const app = new Hono();
+const functionName = "make-server-991766ee";
+const app = new Hono().basePath(`/${functionName}`);
 
 // Enable logger
 app.use('*', logger(console.log));
