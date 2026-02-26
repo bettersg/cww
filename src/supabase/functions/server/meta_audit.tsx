@@ -30,15 +30,16 @@ export async function createMetaAuditEntry(
     userEmail?: string;
     ipAddress?: string;
     details?: Record<string, any>;
+    authHeader?: string;
   }
 ): Promise<void> {
   try {
     const timestamp = new Date().toISOString();
     const entryId = crypto.randomUUID();
-    
+
     // Use a different prefix to distinguish from regular changelog
     const key = `meta-audit:${timestamp}:${entryId}`;
-    
+
     const entry: MetaAuditEntry = {
       id: entryId,
       timestamp,
@@ -48,8 +49,8 @@ export async function createMetaAuditEntry(
       ipAddress: options?.ipAddress,
       details: options?.details,
     };
-    
-    await kv.set(key, entry);
+
+    await kv.set(key, entry, options?.authHeader);
     console.log(`[META-AUDIT] ${action} at ${timestamp} by ${options?.userEmail || options?.userId || 'unknown'}`);
   } catch (error) {
     console.error("Failed to create meta-audit entry:", error);
@@ -61,11 +62,11 @@ export async function createMetaAuditEntry(
  * Get all meta-audit entries (admin only)
  * Note: This function should only be called by superadmin endpoints
  */
-export async function getAllMetaAuditEntries(): Promise<MetaAuditEntry[]> {
+export async function getAllMetaAuditEntries(authHeader?: string): Promise<MetaAuditEntry[]> {
   try {
-    const entries = await kv.getByPrefix("meta-audit:");
+    const entries = await kv.getByPrefix("meta-audit:", authHeader);
     // Sort by timestamp descending (newest first)
-    return entries.sort((a, b) => 
+    return entries.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
   } catch (error) {
@@ -79,9 +80,10 @@ export async function getAllMetaAuditEntries(): Promise<MetaAuditEntry[]> {
  */
 export async function getMetaAuditEntriesByDateRange(
   startDate: string,
-  endDate: string
+  endDate: string,
+  authHeader?: string
 ): Promise<MetaAuditEntry[]> {
-  const allEntries = await getAllMetaAuditEntries();
+  const allEntries = await getAllMetaAuditEntries(authHeader);
   return allEntries.filter(entry => {
     const entryDate = new Date(entry.timestamp);
     return entryDate >= new Date(startDate) && entryDate <= new Date(endDate);
