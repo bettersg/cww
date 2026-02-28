@@ -125,9 +125,6 @@ export function AuthPage() {
                                     Sign In
                                 </Button>
 
-                                <Button type="button" variant="outline" className="w-full">
-                                    Request Admin Access
-                                </Button>
                             </div>
                         </form>
                     </CardContent>
