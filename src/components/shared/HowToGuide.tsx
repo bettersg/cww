@@ -24,7 +24,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-3">
-              <PantryKeeperLogo className="w-10 h-10" />
+              <PantryKeeperLogo className="w-30 h-10" />
               <div>
                 <h1 className="text-xl font-semibold">How To Guide</h1>
                 <p className="text-sm text-gray-600">PantryKeeper User Guide</p>
@@ -62,7 +62,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Understanding Status Indicators</h2>
             <p className="text-gray-700 leading-relaxed mb-4">PantryKeeper automatically categorizes items into different statuses:</p>
-            
+
             <div className="space-y-4">
               <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r">
                 <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
@@ -164,7 +164,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
           {/* Searching & Filtering */}
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Searching & Filtering</h2>
-            
+
             <h3 className="text-xl font-medium mb-3 text-gray-800 flex items-center gap-2">
               <Search className="w-5 h-5" />
               Search Bar
@@ -176,7 +176,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
             </ul>
 
             <h3 className="text-xl font-medium mb-3 text-gray-800">Status Filters</h3>
-            
+
             <h4 className="font-medium mb-2 text-gray-700">Quick Filter Cards (Desktop)</h4>
             <p className="text-gray-700 mb-2">Click any of the three stat cards to filter by that status:</p>
             <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-4">
@@ -237,7 +237,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
               <li><strong>Format:</strong> <code className="bg-gray-100 px-2 py-1 rounded">XXXX-###</code></li>
               <li><strong>Example:</strong> <code className="bg-gray-100 px-2 py-1 rounded">PADD-001</code>, <code className="bg-gray-100 px-2 py-1 rounded">FAIR-002</code></li>
             </ul>
-            
+
             <p className="text-gray-700 mt-4 mb-2"><strong>Benefits:</strong></p>
             <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-4">
               <li>Track different shipments of the same item</li>
@@ -257,7 +257,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
           {/* Smart Quantity Management */}
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Smart Quantity Management</h2>
-            
+
             <h3 className="text-xl font-medium mb-3 text-gray-800">Setting Quantity to Zero</h3>
             <p className="text-gray-700 mb-2">When you distribute all units of an item:</p>
             <ol className="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-3">
@@ -287,7 +287,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
           {/* Distribution Best Practices */}
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Distribution Best Practices</h2>
-            
+
             <h3 className="text-xl font-medium mb-3 text-gray-800">Priority System</h3>
             <ol className="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
               <li><strong>First:</strong> Items marked "Expiring Soon" (orange)</li>
@@ -314,7 +314,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
           {/* Mobile vs Desktop */}
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Mobile vs Desktop</h2>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-blue-50 p-4 rounded border border-blue-200">
                 <h3 className="text-lg font-medium mb-3 text-blue-900">Desktop Features</h3>
@@ -360,7 +360,7 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
           {/* Common Questions */}
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Common Questions</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <p className="font-semibold text-gray-900 mb-1">Q: What happens when an item expires?</p>
