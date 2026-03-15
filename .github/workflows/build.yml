@@ -44,7 +44,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages:
-          - javascript
+            - javascript
       - name: CodeQL Autobuild
         uses: github/codeql-action/autobuild@v4
       - name: CodeQL Analyze
