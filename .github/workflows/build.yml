@@ -39,6 +39,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: 1
-      - name: Checkout
+          fetch-depth: 2
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages:
+          - javascript
+      - name: CodeQL Autobuild
+        uses: github/codeql-action/autobuild@v4
+      - name: CodeQL Analyze
         uses: github/codeql-action/analyze@v4
