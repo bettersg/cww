@@ -1,4 +1,4 @@
-name: Build
+name: CI
 on:
   pull_request:
 
@@ -36,5 +36,9 @@ jobs:
       issues: read
       pull-requests: read
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
       - name: Checkout
         uses: github/codeql-action/analyze@v4
