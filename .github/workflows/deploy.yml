@@ -3,6 +3,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.json'
+      - 'firebase.json'
+      - '.firebaserc'
 
 jobs:
   deploy-frontend:
