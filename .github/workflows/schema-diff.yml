@@ -29,7 +29,6 @@ jobs:
         working-directory: ./src
         run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
       - name: Schema pull
-        id: diff
         working-directory: ./src
         run: supabase db pull
       - name: Schema diff
