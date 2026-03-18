@@ -10,7 +10,7 @@ jobs:
       contents: read
       id-token: write
       actions: read
-      pull_request: write
+      pull-request: write
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
