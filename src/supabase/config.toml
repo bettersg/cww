@@ -7,6 +7,7 @@ max_rows = 1000
 
 [functions.make-server-991766ee]
 verify_jwt = false
+entrypoint = "./functions/server/index.tsx" # Path must be relative to config.toml
 
 [db.migrations]
 schema_paths = [
