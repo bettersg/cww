@@ -37,9 +37,6 @@ jobs:
       - name: Schema pull
         working-directory: ./src
         run: supabase db pull
-      # - name: Schema diff
-      #   working-directory: ./src
-      #   run: supabase db diff --linked
       - name: Schema push dry-run
         id: dry_run
         if: ${{ github.event_name == 'pull_request' }}
