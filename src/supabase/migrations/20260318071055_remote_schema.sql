@@ -1,4 +1,3 @@
-drop extension if exists "pg_net"
 CREATE INDEX kv_store_991766ee_key_idx1 ON public.kv_store_991766ee USING btree (key text_pattern_ops)
 CREATE INDEX kv_store_991766ee_key_idx2 ON public.kv_store_991766ee USING btree (key text_pattern_ops)
 CREATE INDEX kv_store_991766ee_key_idx3 ON public.kv_store_991766ee USING btree (key text_pattern_ops)
