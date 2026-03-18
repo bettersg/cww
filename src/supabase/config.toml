@@ -7,3 +7,8 @@ max_rows = 1000
 
 [functions.make-server-991766ee]
 verify_jwt = false
+
+[db.migrations]
+schema_paths = [
+  "./schemas/*.sql",
+]

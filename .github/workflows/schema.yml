@@ -1,0 +1,48 @@
+name: Supabase Schema
+on:
+  pull_request:
+    paths:
+      - 'src/supabase/schemas/**'
+      - 'src/supabase/migrations/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/supabase/schemas/**'
+      - 'src/supabase/migrations/**'
+
+jobs:
+  supabase-schema:
+    name: Supabase Schema
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+      pull-requests: write
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Link Supabase project
+        working-directory: ./src
+        run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+      # - name: Schema pull
+      #   working-directory: ./src
+      #   run: supabase db pull
+      - name: Schema push dry-run
+        id: dry_run
+        if: ${{ github.event_name == 'pull_request' }}
+        working-directory: ./src
+        run: supabase db push --dry-run --linked
+      - name: Schema push
+        if: ${{ github.event_name == 'push' }}
+        working-directory: ./src
+        run: supabase db push --linked
