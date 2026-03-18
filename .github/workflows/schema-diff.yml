@@ -34,9 +34,9 @@ jobs:
       - name: Link Supabase project
         working-directory: ./src
         run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
-      - name: Schema pull
-        working-directory: ./src
-        run: supabase db pull --debug
+      # - name: Schema pull
+      #   working-directory: ./src
+      #   run: supabase db pull
       - name: Schema push dry-run
         id: dry_run
         if: ${{ github.event_name == 'pull_request' }}
