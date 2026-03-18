@@ -1,6 +1,9 @@
 name: Supabase Schema Diff
 on:
   pull_request:
+    paths:
+      - 'src/supabase/schemas/**'
+      - 'src/supabase/migrations/**'
 
 jobs:
   supabase-schema-diff:
@@ -25,14 +28,11 @@ jobs:
       - name: Link Supabase project
         working-directory: ./src
         run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
-      - name: Supabase schema diff
+      - name: Schema pull
+        id: diff
+        working-directory: ./src
+        run: supabase db pull
+      - name: Schema diff
         id: diff
         working-directory: ./src
         run: supabase db diff --linked
-      - name: Create PR comment
-        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
-        with:
-          issue-number: ${{ github.event.number }}
-          body: |
-            Build output:
-            ${{ steps.diff.outputs.stdout }}
