@@ -42,14 +42,6 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         working-directory: ./src
         run: supabase db push --dry-run --linked
-      - name: Create PR comment
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          issue-number: ${{ github.event.number }}
-          body: |
-            Build output:
-            ${{ steps.dry_run.outputs.stdout }}
       - name: Schema push
         if: ${{ github.event_name == 'push' }}
         working-directory: ./src
