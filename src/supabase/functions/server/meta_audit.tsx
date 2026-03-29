@@ -31,6 +31,7 @@ export async function createMetaAuditEntry(
     ipAddress?: string;
     details?: Record<string, any>;
     authHeader?: string;
+    tenantId?: string;
   }
 ): Promise<void> {
   try {
@@ -50,7 +51,7 @@ export async function createMetaAuditEntry(
       details: options?.details,
     };
 
-    await kv.set(key, entry, options?.authHeader);
+    await kv.set(key, entry, options?.authHeader, options?.tenantId);
     console.log(`[META-AUDIT] ${action} at ${timestamp} by ${options?.userEmail || options?.userId || 'unknown'}`);
   } catch (error) {
     console.error("Failed to create meta-audit entry:", error);
@@ -62,9 +63,9 @@ export async function createMetaAuditEntry(
  * Get all meta-audit entries (admin only)
  * Note: This function should only be called by superadmin endpoints
  */
-export async function getAllMetaAuditEntries(authHeader?: string): Promise<MetaAuditEntry[]> {
+export async function getAllMetaAuditEntries(authHeader?: string, tenantId?: string): Promise<MetaAuditEntry[]> {
   try {
-    const entries = await kv.getByPrefix("meta-audit:", authHeader);
+    const entries = await kv.getByPrefix("meta-audit:", authHeader, tenantId);
     // Sort by timestamp descending (newest first)
     return entries.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -81,9 +82,10 @@ export async function getAllMetaAuditEntries(authHeader?: string): Promise<MetaA
 export async function getMetaAuditEntriesByDateRange(
   startDate: string,
   endDate: string,
-  authHeader?: string
+  authHeader?: string,
+  tenantId?: string
 ): Promise<MetaAuditEntry[]> {
-  const allEntries = await getAllMetaAuditEntries(authHeader);
+  const allEntries = await getAllMetaAuditEntries(authHeader, tenantId);
   return allEntries.filter(entry => {
     const entryDate = new Date(entry.timestamp);
     return entryDate >= new Date(startDate) && entryDate <= new Date(endDate);

@@ -1,4 +1,4 @@
-import { projectId } from '../../utils/supabase/info';
+import { projectId, tenantId } from '../../utils/supabase/info';
 import { supabase } from '../../utils/supabase/client';
 
 export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-991766ee`;
@@ -18,6 +18,7 @@ export const getHeaders = async (): Promise<HeadersInit> => {
   return {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${accessToken}`,
+    'x-tenant-id': tenantId,
   };
 };
 

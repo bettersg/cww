@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../utils/supabase/client';
+import { supabase, verifyUserTenant } from '../utils/supabase/client';
 
 interface User {
     name: string;
@@ -25,9 +25,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session?.user) {
-                    const name = session.user.user_metadata?.full_name ||
-                        session.user.email?.split('@')[0] || "User";
-                    setUser({ name, email: session.user.email || "" });
+                    if (!verifyUserTenant(session.access_token)) {
+                        await supabase.auth.signOut();
+                        setUser(null);
+                    } else {
+                        const name = session.user.user_metadata?.full_name ||
+                            session.user.email?.split('@')[0] || "User";
+                        setUser({ name, email: session.user.email || "" });
+                    }
                 } else {
                     setUser(null);
                 }
@@ -44,9 +49,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log(`authStateChange:${location.pathname}`, _event, session);
 
             if (session?.user) {
-                const name = session.user.user_metadata?.full_name ||
-                    session.user.email?.split('@')[0] || "User";
-                setUser({ name, email: session.user.email || "" });
+                if (!verifyUserTenant(session.access_token)) {
+                    supabase.auth.signOut();
+                    setUser(null);
+                } else {
+                    const name = session.user.user_metadata?.full_name ||
+                        session.user.email?.split('@')[0] || "User";
+                    setUser({ name, email: session.user.email || "" });
+                }
             } else {
                 setUser(null);
             }
