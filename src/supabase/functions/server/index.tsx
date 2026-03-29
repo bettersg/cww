@@ -20,7 +20,7 @@ app.use(
   "/*",
   cors({
     origin: allowedOrigins ? allowedOrigins.split(',') : "*",
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "x-tenant-id"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     exposeHeaders: ["Content-Length", "Content-Disposition"],
     maxAge: 600,
@@ -58,8 +58,9 @@ app.get("/health", (c) => {
 app.get("/items", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const sanitizedPrefix = sanitizePrefix("inventory:");
-    const items = await kv.getByPrefix(sanitizedPrefix, authHeader);
+    const items = await kv.getByPrefix(sanitizedPrefix, authHeader, tenantId);
     console.log(`Fetched ${items.length} inventory items`);
     return c.json({ items: items || [] });
   } catch (error) {
@@ -72,8 +73,9 @@ app.get("/items", async (c) => {
 app.get("/items/:id", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const id = c.req.param("id");
-    const item = await kv.get(`inventory:${id}`, authHeader);
+    const item = await kv.get(`inventory:${id}`, authHeader, tenantId);
 
     if (!item) {
       return c.json({ error: "Item not found" }, 404);
@@ -168,6 +170,7 @@ function validateItemData(data: any, isCreate = false) {
 app.post("/items", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const body = await c.req.json();
 
     // Validate input
@@ -197,7 +200,7 @@ app.post("/items", async (c) => {
       expiringThreshold: body.expiringThreshold || 7,
     };
 
-    await kv.set(`inventory:${id}`, item, authHeader);
+    await kv.set(`inventory:${id}`, item, authHeader, tenantId);
     console.log(`Created inventory item: ${id} - ${item.name}`);
 
     // Create changelog entry for item addition
@@ -224,10 +227,11 @@ app.post("/items", async (c) => {
 app.put("/items/:id", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const id = c.req.param("id");
     const body = await c.req.json();
 
-    const existingItem = await kv.get(`inventory:${id}`, authHeader);
+    const existingItem = await kv.get(`inventory:${id}`, authHeader, tenantId);
     if (!existingItem) {
       return c.json({ error: "Item not found" }, 404);
     }
@@ -258,7 +262,7 @@ app.put("/items/:id", async (c) => {
     // Track what changed
     const fieldsChanged = changelog.getChangedFields(existingItem, updatedItem);
 
-    await kv.set(`inventory:${id}`, updatedItem, authHeader);
+    await kv.set(`inventory:${id}`, updatedItem, authHeader, tenantId);
     console.log(`Updated inventory item: ${id}`);
 
     // Create changelog entry if fields actually changed
@@ -288,9 +292,10 @@ app.put("/items/:id", async (c) => {
 app.delete("/items/:id", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const id = c.req.param("id");
 
-    const existingItem = await kv.get(`inventory:${id}`, authHeader);
+    const existingItem = await kv.get(`inventory:${id}`, authHeader, tenantId);
     if (!existingItem) {
       return c.json({ error: "Item not found" }, 404);
     }
@@ -308,7 +313,7 @@ app.delete("/items/:id", async (c) => {
       }
     );
 
-    await kv.del(`inventory:${id}`, authHeader);
+    await kv.del(`inventory:${id}`, authHeader, tenantId);
     console.log(`Deleted inventory item: ${id}`);
 
     return c.json({ message: "Item deleted successfully" });
@@ -322,6 +327,7 @@ app.delete("/items/:id", async (c) => {
 app.post("/distribute", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const body = await c.req.json();
     const { itemIds, quantities, distributedBy } = body;
 
@@ -341,7 +347,7 @@ app.post("/distribute", async (c) => {
       const quantityToDistribute = quantities[i];
 
       try {
-        const item = await kv.get(`inventory:${id}`, authHeader);
+        const item = await kv.get(`inventory:${id}`, authHeader, tenantId);
 
         if (!item) {
           errors.push({ id, error: "Item not found" });
@@ -362,7 +368,7 @@ app.post("/distribute", async (c) => {
           lastModifiedDate: new Date().toISOString(),
         };
 
-        await kv.set(`inventory:${id}`, updatedItem, authHeader);
+        await kv.set(`inventory:${id}`, updatedItem, authHeader, tenantId);
         updatedItems.push(updatedItem);
         console.log(`Distributed ${quantityToDistribute} units from item ${id}. New quantity: ${newQuantity}`);
       } catch (itemError) {
@@ -385,6 +391,7 @@ app.post("/distribute", async (c) => {
 app.post("/stock-out", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const body = await c.req.json();
     const { items, stockedOutBy } = body;
 
@@ -407,7 +414,7 @@ app.post("/stock-out", async (c) => {
           continue;
         }
 
-        const item = await kv.get(`inventory:${id}`, authHeader);
+        const item = await kv.get(`inventory:${id}`, authHeader, tenantId);
 
         if (!item) {
           errors.push({ id, error: "Item not found" });
@@ -439,7 +446,7 @@ app.post("/stock-out", async (c) => {
           lastModifiedDate: new Date().toISOString(),
         };
 
-        await kv.set(`inventory:${id}`, updatedItem, authHeader);
+        await kv.set(`inventory:${id}`, updatedItem, authHeader, tenantId);
         updatedItems.push(updatedItem);
         console.log(`Stocked out ${quantityToStockOut} units from item ${id} (${item.name}). New quantity: ${newQuantity}`);
 
@@ -483,8 +490,9 @@ app.post("/stock-out", async (c) => {
 app.post("/initialize", async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     // Check if already initialized
-    const existingItems = await kv.getByPrefix("inventory:", authHeader);
+    const existingItems = await kv.getByPrefix("inventory:", authHeader, tenantId);
     if (existingItems && existingItems.length > 0) {
       return c.json({ message: "Database already initialized", itemCount: existingItems.length });
     }
@@ -509,7 +517,7 @@ app.post("/initialize", async (c) => {
     ];
 
     const keys = sampleItems.map(item => `inventory:${item.id}`);
-    await kv.mset(keys, sampleItems, authHeader);
+    await kv.mset(keys, sampleItems, authHeader, tenantId);
 
     console.log(`Initialized database with ${sampleItems.length} sample items`);
     return c.json({ message: "Database initialized successfully", itemCount: sampleItems.length });
@@ -524,6 +532,7 @@ app.get("/changelog", async (c) => {
   try {
     // SECURITY: Require authentication for audit log access
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const accessToken = authHeader?.split(' ')[1];
 
     if (!accessToken) {
@@ -555,7 +564,7 @@ app.get("/changelog", async (c) => {
     const performedBy = c.req.query('performedBy'); // Filter by user
     const itemId = c.req.query('itemId'); // Filter by item
 
-    let entries = await changelog.getAllChangelogEntries(authHeader);
+    let entries = await changelog.getAllChangelogEntries(authHeader, tenantId);
 
     // Apply filters
     if (action) {
@@ -590,6 +599,7 @@ app.get("/changelog", async (c) => {
         resultCount: paginatedEntries.length
       },
       authHeader,
+      tenantId,
     });
 
     console.log(`[AUDIT] Changelog accessed at ${new Date().toISOString()} from ${clientIp}`);
@@ -617,6 +627,7 @@ app.get("/changelog/export", async (c) => {
   try {
     // SECURITY: Require authentication for audit log export
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const accessToken = authHeader?.split(' ')[1];
 
     if (!accessToken) {
@@ -632,7 +643,7 @@ app.get("/changelog/export", async (c) => {
       }, 429);
     }
 
-    const entries = await changelog.getAllChangelogEntries(authHeader);
+    const entries = await changelog.getAllChangelogEntries(authHeader, tenantId);
 
     // SECURITY: Create meta-audit entry for export
     await metaAudit.createMetaAuditEntry("AUDIT_EXPORTED", {
@@ -641,6 +652,7 @@ app.get("/changelog/export", async (c) => {
         entryCount: entries.length
       },
       authHeader,
+      tenantId,
     });
 
     console.log(`[AUDIT] Changelog exported at ${new Date().toISOString()} from ${clientIp}`);
@@ -729,6 +741,7 @@ app.delete("/changelog", async (c) => {
   try {
     // SECURITY: Require authentication for destructive audit log operations
     const authHeader = c.req.header('Authorization');
+    const tenantId = c.req.header('x-tenant-id');
     const accessToken = authHeader?.split(' ')[1];
 
     if (!accessToken) {
@@ -744,6 +757,7 @@ app.delete("/changelog", async (c) => {
           reason: "Rate limit exceeded"
         },
         authHeader,
+        tenantId,
       });
       return c.json({
         error: "Rate limit exceeded",
@@ -758,7 +772,7 @@ app.delete("/changelog", async (c) => {
     //   return c.json({ error: "Insufficient permissions. Admin role required." }, 403);
     // }
 
-    const count = await changelog.clearAllChangelogEntries(authHeader);
+    const count = await changelog.clearAllChangelogEntries(authHeader, tenantId);
 
     // SECURITY: Create permanent meta-audit entry BEFORE clearing
     await metaAudit.createMetaAuditEntry("AUDIT_CLEARED", {
@@ -768,6 +782,7 @@ app.delete("/changelog", async (c) => {
         timestamp: new Date().toISOString()
       },
       authHeader,
+      tenantId,
     });
 
     // SECURITY: Log who cleared the audit log
