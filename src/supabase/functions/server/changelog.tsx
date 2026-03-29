@@ -25,6 +25,7 @@ export async function createChangelogEntry(
     fieldsChanged?: string[];
     snapshot?: Record<string, any>;
     authHeader?: string;
+    tenantId?: string;
   }
 ): Promise<void> {
   try {
@@ -46,7 +47,7 @@ export async function createChangelogEntry(
       performedBy: performedBy || "System",
     };
 
-    await kv.set(key, entry, options?.authHeader);
+    await kv.set(key, entry, options?.authHeader, options?.tenantId);
     console.log(`Created changelog entry: ${action} for item ${itemName} (${itemId})`);
   } catch (error) {
     console.error("Failed to create changelog entry:", error);
@@ -57,9 +58,9 @@ export async function createChangelogEntry(
 /**
  * Get all changelog entries (sorted by timestamp descending)
  */
-export async function getAllChangelogEntries(authHeader?: string): Promise<ChangelogEntry[]> {
+export async function getAllChangelogEntries(authHeader?: string, tenantId?: string): Promise<ChangelogEntry[]> {
   try {
-    const entries = await kv.getByPrefix("changelog:", authHeader);
+    const entries = await kv.getByPrefix("changelog:", authHeader, tenantId);
     // Sort by timestamp descending (newest first)
     return entries.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -118,9 +119,9 @@ export function createItemSnapshot(item: any): Record<string, any> {
 /**
  * Clear all changelog entries
  */
-export async function clearAllChangelogEntries(authHeader?: string): Promise<number> {
+export async function clearAllChangelogEntries(authHeader?: string, tenantId?: string): Promise<number> {
   try {
-    const entries = await kv.getByPrefix("changelog:", authHeader);
+    const entries = await kv.getByPrefix("changelog:", authHeader, tenantId);
     const keys = entries.map(entry => {
       // SECURITY: Validate timestamp and ID format before reconstructing key
       // Timestamps should be ISO 8601 format, IDs should be UUIDs
@@ -142,7 +143,7 @@ export async function clearAllChangelogEntries(authHeader?: string): Promise<num
     }).filter(key => key !== null) as string[];
 
     if (keys.length > 0) {
-      await kv.mdel(keys, authHeader);
+      await kv.mdel(keys, authHeader, tenantId);
       console.log(`Cleared ${keys.length} changelog entries`);
     }
 

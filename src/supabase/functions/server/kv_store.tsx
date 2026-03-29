@@ -12,23 +12,29 @@ CREATE TABLE kv_store_991766ee (
 // This file provides a simple key-value interface for storing Figma Make data. It should be adequate for most small-scale use cases.
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 
-const client = (authHeader?: string) => {
+const client = (authHeader?: string, tenantId?: string) => {
+  const options: any = {};
+  if (tenantId) {
+    options.db = { schema: tenantId };
+  }
   if (authHeader) {
+    options.global = { headers: { Authorization: authHeader } };
     return createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      options
     );
   }
   return createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    options
   );
 };
 
 // Set stores a key-value pair in the database.
-export const set = async (key: string, value: any, authHeader?: string): Promise<void> => {
-  const supabase = client(authHeader)
+export const set = async (key: string, value: any, authHeader?: string, tenantId?: string): Promise<void> => {
+  const supabase = client(authHeader, tenantId)
   const { error } = await supabase.from("kv_store_991766ee").upsert({
     key,
     value
@@ -39,8 +45,8 @@ export const set = async (key: string, value: any, authHeader?: string): Promise
 };
 
 // Get retrieves a key-value pair from the database.
-export const get = async (key: string, authHeader?: string): Promise<any> => {
-  const supabase = client(authHeader)
+export const get = async (key: string, authHeader?: string, tenantId?: string): Promise<any> => {
+  const supabase = client(authHeader, tenantId)
   const { data, error } = await supabase.from("kv_store_991766ee").select("value").eq("key", key).maybeSingle();
   if (error) {
     throw new Error(error.message);
@@ -49,8 +55,8 @@ export const get = async (key: string, authHeader?: string): Promise<any> => {
 };
 
 // Delete deletes a key-value pair from the database.
-export const del = async (key: string, authHeader?: string): Promise<void> => {
-  const supabase = client(authHeader)
+export const del = async (key: string, authHeader?: string, tenantId?: string): Promise<void> => {
+  const supabase = client(authHeader, tenantId)
   const { error } = await supabase.from("kv_store_991766ee").delete().eq("key", key);
   if (error) {
     throw new Error(error.message);
@@ -58,8 +64,8 @@ export const del = async (key: string, authHeader?: string): Promise<void> => {
 };
 
 // Sets multiple key-value pairs in the database.
-export const mset = async (keys: string[], values: any[], authHeader?: string): Promise<void> => {
-  const supabase = client(authHeader)
+export const mset = async (keys: string[], values: any[], authHeader?: string, tenantId?: string): Promise<void> => {
+  const supabase = client(authHeader, tenantId)
   const { error } = await supabase.from("kv_store_991766ee").upsert(keys.map((k, i) => ({ key: k, value: values[i] })));
   if (error) {
     throw new Error(error.message);
@@ -67,8 +73,8 @@ export const mset = async (keys: string[], values: any[], authHeader?: string): 
 };
 
 // Gets multiple key-value pairs from the database.
-export const mget = async (keys: string[], authHeader?: string): Promise<any[]> => {
-  const supabase = client(authHeader)
+export const mget = async (keys: string[], authHeader?: string, tenantId?: string): Promise<any[]> => {
+  const supabase = client(authHeader, tenantId)
   const { data, error } = await supabase.from("kv_store_991766ee").select("value").in("key", keys);
   if (error) {
     throw new Error(error.message);
@@ -77,8 +83,8 @@ export const mget = async (keys: string[], authHeader?: string): Promise<any[]> 
 };
 
 // Deletes multiple key-value pairs from the database.
-export const mdel = async (keys: string[], authHeader?: string): Promise<void> => {
-  const supabase = client(authHeader)
+export const mdel = async (keys: string[], authHeader?: string, tenantId?: string): Promise<void> => {
+  const supabase = client(authHeader, tenantId)
   const { error } = await supabase.from("kv_store_991766ee").delete().in("key", keys);
   if (error) {
     throw new Error(error.message);
@@ -86,8 +92,8 @@ export const mdel = async (keys: string[], authHeader?: string): Promise<void> =
 };
 
 // Search for key-value pairs by prefix.
-export const getByPrefix = async (prefix: string, authHeader?: string): Promise<any[]> => {
-  const supabase = client(authHeader)
+export const getByPrefix = async (prefix: string, authHeader?: string, tenantId?: string): Promise<any[]> => {
+  const supabase = client(authHeader, tenantId)
   const { data, error } = await supabase.from("kv_store_991766ee").select("key, value").like("key", prefix + "%");
   if (error) {
     throw new Error(error.message);

@@ -29,6 +29,7 @@ A modern, mobile-friendly inventory management application for tracking food don
 - ✅ Rate limiting on sensitive endpoints
 - ✅ Permanent meta-audit trail
 - ✅ Configurable CORS
+- ✅ **Multi-Tenant Isolation** - Edge and Frontend DB schema access intrinsically restricted per JWT claims decoding.
 - ⚠️ **TODO:** Role-based access control (RBAC)
 
 ---
@@ -88,6 +89,7 @@ A modern, mobile-friendly inventory management application for tracking food don
 
 **Architecture:**
 - ✅ **Modular Features:** Completed Phase 7 refactoring - reduced App.tsx from 1,760 to 378 lines (78.5% reduction)
+- ✅ **Multi-Tenant Architecture:** Secure Edge segmentation and localized DB querying restricted by incoming `x-tenant-id` header boundaries.
 - ✅ **Comprehensive Testing:** All features verified through integration, unit, and end-to-end testing
 - ✅ **Clean Codebase:** Extracted patterns applied across audit-log, stocking, inventory, search-filter, and export features
 
@@ -191,6 +193,8 @@ See `/guidelines/Guidelines.md` for full guidelines. Key points:
 3. Verify environment variables are set correctly
 
 **Key Environment Variables:**
+- `PROJECT_ID` - Supabase project ID natively replacing Vite overrides.
+- `TENANT_ID` - Global environment identifier restricting data boundary segmentation. 
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_ANON_KEY` - Public anon key
 - `SUPABASE_SERVICE_ROLE_KEY` - Server-side key (keep secret!)

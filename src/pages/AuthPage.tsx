@@ -6,7 +6,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { PantryKeeperLogo } from "../components/PantryKeeperLogo";
 import { Mail, Lock } from "lucide-react";
-import { supabase } from "../utils/supabase/client";
+import { supabase, verifyUserTenant } from "../utils/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -38,7 +38,13 @@ export function AuthPage() {
                 return;
             }
 
-            if (data.user) {
+            if (data.session) {
+                if (!verifyUserTenant(data.session.access_token)) {
+                    await supabase.auth.signOut();
+                    setLoginError("Unauthorized: Your account does not have access to this tenant application.");
+                    return;
+                }
+
                 navigate("/dashboard");
             }
         } catch (err) {
