@@ -5,7 +5,6 @@ create table "public"."user_schema_mapping" (
 "schema_name" text not null
 );
 
-
 alter table "public"."user_schema_mapping" enable row level security;
 
 CREATE UNIQUE INDEX user_schema_mapping_pkey ON public.user_schema_mapping USING btree (user_id, schema_name);
@@ -93,7 +92,6 @@ grant trigger on table "public"."user_schema_mapping" to "service_role";
 grant truncate on table "public"."user_schema_mapping" to "service_role";
 
 grant update on table "public"."user_schema_mapping" to "service_role";
-
 
 create policy "Users can view their own schema mappings"
 on "public"."user_schema_mapping"
