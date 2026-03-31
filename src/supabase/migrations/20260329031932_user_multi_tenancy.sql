@@ -1,9 +1,9 @@
 create extension if not exists "pg_net" with schema "extensions";
 
-  create table "public"."user_schema_mapping" (
-    "user_id" uuid not null,
-    "schema_name" text not null
-      );
+create table "public"."user_schema_mapping" (
+"user_id" uuid not null,
+"schema_name" text not null
+);
 
 
 alter table "public"."user_schema_mapping" enable row level security;
@@ -95,9 +95,9 @@ grant truncate on table "public"."user_schema_mapping" to "service_role";
 grant update on table "public"."user_schema_mapping" to "service_role";
 
 
-  create policy "Users can view their own schema mappings"
-  on "public"."user_schema_mapping"
-  as permissive
-  for select
-  to authenticated
+create policy "Users can view their own schema mappings"
+on "public"."user_schema_mapping"
+as permissive
+for select
+to authenticated
 using ((( SELECT auth.uid() AS uid) = user_id));
