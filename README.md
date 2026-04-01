@@ -18,7 +18,14 @@ docker run -d -p 3000:3000 <image>:<tag>
 
 ## Deployment
 
-For frontend:
+### Frontend
+
+#### Create target for Hosting site
+
+```sh
+firebase target:apply hosting <target-name> <site-id>
+```
+
 Hosted in firebase, you need access to the project.
 Then:
 ```sh
@@ -28,7 +35,8 @@ firebase deploy --only-hosting
 
 This deploys the frontend
 
-For backend:
+### Backend
+
 Functions and database are in supabase. If you need to redeploy functions or execute migrations:
 
 ```sh

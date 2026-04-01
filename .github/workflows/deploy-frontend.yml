@@ -1,0 +1,26 @@
+name: Deploy frontend
+on:
+  push:
+    branches:
+      - staging
+      - production
+    # paths:
+    #   - 'src/**'
+    #   - 'index.html'
+    #   - 'package.json'
+    #   - 'package-lock.json'
+    #   - 'vite.config.json'
+    #   - 'firebase.json'
+    #   - '.firebaserc'
+
+jobs:
+  deploy-bukit-merah:
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    uses: ./.github/workflows/reusable-deploy-frontend.yml
+    with:
+      firebase_site: 'cww-pantry-keeper-dev'
+      firebase_target: 'bukit-merah'
+      environment: ${{ github.ref_name }}

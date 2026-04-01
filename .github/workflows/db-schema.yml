@@ -6,15 +6,16 @@ on:
       - 'src/supabase/migrations/**'
   push:
     branches:
-      - main
+      - staging
+      - production
     paths:
       - 'src/supabase/schemas/**'
       - 'src/supabase/migrations/**'
 
 jobs:
   supabase-schema:
-    name: Supabase Schema
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
     permissions:
       contents: read
       id-token: write
@@ -34,9 +35,6 @@ jobs:
       - name: Link Supabase project
         working-directory: ./src
         run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
-      # - name: Schema pull
-      #   working-directory: ./src
-      #   run: supabase db pull
       - name: Schema push dry-run
         id: dry_run
         if: ${{ github.event_name == 'pull_request' }}
