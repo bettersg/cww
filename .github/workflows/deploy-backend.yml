@@ -1,0 +1,32 @@
+name: Deploy backend
+on:
+  push:
+    branches:
+      - staging
+      - production
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Link Supabase project
+        working-directory: ./src
+        run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+      - name: Deploy Supabase functions
+        working-directory: ./src
+        run: supabase functions deploy
