@@ -18,7 +18,7 @@ on:
 jobs:
   supabase-schema:
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+    environment: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
     permissions:
       contents: read
       id-token: write
@@ -35,7 +35,7 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: latest
-      - run: echo "environment = ${{ github.head_ref }}"
+      - run: echo "environment = ${{ github.base_ref }}"
       - run: echo "Linking to Supabase project ID ${{ vars.SUPABASE_PROJECT_ID }}"
       - name: Link Supabase project
         working-directory: ./src
