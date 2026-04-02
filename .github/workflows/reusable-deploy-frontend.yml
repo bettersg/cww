@@ -2,6 +2,13 @@ name: Reusable frontend deploy
 on:
   workflow_call:
     inputs:
+      environment:
+        required: true
+        type: string
+      node_version:
+        required: false
+        type: string
+        default: '25.8.1'
       firebase_site:
         required: true
         type: string
@@ -11,13 +18,17 @@ on:
       tenant:
         required: true
         type: string
-      environment:
+    secrets:
+      supabase_project_id:
         required: true
-        type: string
-      node_version:
-        required: false
-        type: string
-        default: '25.8.1'
+      supabase_public_anon_key:
+        required: true
+      github_token:
+        required: true
+      firebase_project_id:
+        required: true
+      firebase_service_account_key:
+        required: true
     outputs:
       build-status:
         description: "The status of the build job"
@@ -44,15 +55,15 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          VITE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          VITE_PROJECT_ID: ${{ secrets.supabase_project_id }}
           VITE_TENANT_ID: ${{ inputs.tenant }}
-          VITE_PUBLIC_ANON_KEY: ${{ secrets.SUPABASE_PUBLIC_ANON_KEY }}
+          VITE_PUBLIC_ANON_KEY: ${{ secrets.supabase_public_anon_key }}
       - run: echo "Deploying to site ${{ inputs.firebase_site }} using target ${{ inputs.firebase_target }}"
       - uses: FirebaseExtended/action-hosting-deploy@e2eda2e106cfa35cdbcf4ac9ddaf6c4756df2c8c # v0.10.0
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}"
-          projectId: "${{ vars.FIREBASE_PROJECT_ID }}"
+          repoToken: "${{ secrets.github_token }}"
+          firebaseServiceAccount: "${{ secrets.firebase_service_account_key }}"
+          projectId: "${{ secrets.firebase_project_id }}"
           target: ${{ inputs.firebase_target }}
           channelId: live
         env:

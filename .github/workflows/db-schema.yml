@@ -35,10 +35,9 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: latest
-      - run: echo "Linking to Supabase project ID ${{ vars.SUPABASE_PROJECT_ID }}"
       - name: Link Supabase project
         working-directory: ./src
-        run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
       - name: Schema push dry-run
         id: dry_run
         if: ${{ github.event_name == 'pull_request' }}
