@@ -26,7 +26,7 @@ jobs:
       tenant: 'bukit_merah'
       environment: ${{ github.ref_name }}
     secrets:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
       firebase_project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
       firebase_service_account_key: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
       supabase_project_id: ${{ secrets.SUPABASE_PROJECT_ID }}
