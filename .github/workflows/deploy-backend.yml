@@ -26,7 +26,7 @@ jobs:
           version: latest
       - name: Link Supabase project
         working-directory: ./src
-        run: supabase link --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
       - name: Deploy Supabase functions
         working-directory: ./src
         run: supabase functions deploy
