@@ -23,4 +23,5 @@ jobs:
     with:
       firebase_site: 'cww-pantry-keeper-dev'
       firebase_target: 'bukit-merah'
+      tenant: 'bukit_merah'
       environment: ${{ github.ref_name }}
