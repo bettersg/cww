@@ -9,9 +9,6 @@ on:
         required: false
         type: string
         default: '25.8.1'
-      firebase_site:
-        required: true
-        type: string
       firebase_target:
         required: true
         type: string
@@ -58,7 +55,7 @@ jobs:
           VITE_PROJECT_ID: ${{ secrets.supabase_project_id }}
           VITE_TENANT_ID: ${{ inputs.tenant }}
           VITE_PUBLIC_ANON_KEY: ${{ secrets.supabase_public_anon_key }}
-      - run: echo "Deploying to site ${{ inputs.firebase_site }} using target ${{ inputs.firebase_target }}"
+      - run: echo "Deploying to target ${{ inputs.firebase_target }}"
       - uses: FirebaseExtended/action-hosting-deploy@e2eda2e106cfa35cdbcf4ac9ddaf6c4756df2c8c # v0.10.0
         with:
           repoToken: "${{ secrets.gh_token }}"
