@@ -1,13 +1,16 @@
 {
-  "hosting": {
-    "source": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "frameworksBackend": {
-      "region": "asia-east1"
+  "hosting": [
+    {
+      "target": "bukit-merah",
+      "public": "build",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [{
+        "source": "**",
+        "destination": "/index.html"
+      }],
+      "frameworksBackend": {
+        "region": "asia-east1"
+      }
     }
-  }
+  ]
 }
