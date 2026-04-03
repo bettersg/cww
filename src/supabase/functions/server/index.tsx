@@ -213,6 +213,7 @@ app.post("/items", async (c) => {
         batchNumber: item.batchNumber,
         snapshot: changelog.createItemSnapshot(item),
         authHeader,
+        tenantId
       }
     );
 
@@ -277,6 +278,7 @@ app.put("/items/:id", async (c) => {
           fieldsChanged,
           snapshot: changelog.createItemSnapshot(updatedItem),
           authHeader,
+          tenantId
         }
       );
     }
@@ -310,6 +312,7 @@ app.delete("/items/:id", async (c) => {
         batchNumber: existingItem.batchNumber,
         snapshot: changelog.createItemSnapshot(existingItem),
         authHeader,
+        tenantId
       }
     );
 
@@ -461,6 +464,7 @@ app.post("/stock-out", async (c) => {
             fieldsChanged: ["quantity"],
             snapshot: changelog.createItemSnapshot(updatedItem),
             authHeader,
+            tenantId
           }
         );
       } catch (itemError) {
