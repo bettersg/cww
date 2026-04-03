@@ -55,3 +55,12 @@ supabase db push
 ```
 
 Otherwise just execute the sql in supabase (migration files are preferred for traceability).
+
+#### DB Migrations
+
+* For schema changes, update the necessary DDL sql file in `src/supabase/schemas`
+* Create a new migration:
+```sh
+supabase db diff -f <migration_name>
+```
+* On PR approval and merge to `staging/production`, schema changes will be pushed to the appropriate remote DB.
