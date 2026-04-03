@@ -189,6 +189,16 @@ When you distribute all units of an item:
 
 ---
 
+## Creating Users (Admins)
+
+When creating a new user account for PantryKeeper, you must ensure they have the correct tenant mapping:
+
+1. Create the user in the Supabase dashboard
+2. You **have to add the mapping** `"bukit_merah"` to their tenant configuration in user_schema_mapping
+3. If this mapping is missing, the new user will be unauthorized and unable to access the inventory.
+
+---
+
 ## Tips & Best Practices
 
 1. **Regular Reviews** - Check your inventory daily for expiring items

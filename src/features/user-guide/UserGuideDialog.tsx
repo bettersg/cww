@@ -24,7 +24,7 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
         </DialogHeader>
         <ScrollArea className="h-[calc(85vh-120px)]">
           <div className="px-6 py-4 space-y-8 text-sm max-w-full overflow-hidden">
-            
+
             {/* Introduction */}
             <section>
               <h2 className="text-xl font-semibold mb-3">Introduction</h2>
@@ -121,7 +121,7 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
                 <li>Search is instant and case-insensitive</li>
                 <li>Works alongside status filters</li>
               </ul>
-              
+
               <h3 className="font-semibold mb-2">Status Filters</h3>
               <h4 className="font-medium text-sm mb-1">Quick Filter Cards (Desktop)</h4>
               <p className="text-gray-700 mb-2">Click any of the three stat cards to filter by that status:</p>
@@ -131,7 +131,7 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
                 <li><strong>Expired</strong> - Red card</li>
               </ul>
               <p className="text-gray-700 mb-3">Click again to show all items.</p>
-              
+
               <h4 className="font-medium text-sm mb-1">Dropdown Filter (All Devices)</h4>
               <p className="text-gray-700 mb-2">Use the dropdown menu to filter by:</p>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
@@ -248,7 +248,7 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
                   </ul>
                 </li>
               </ol>
-              
+
               <h3 className="font-semibold mb-2">Why Keep Depleted Items?</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
                 <li><strong>Historical tracking</strong> - Know what was distributed</li>
@@ -267,14 +267,14 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
                 <li><strong>Second:</strong> Oldest "Fresh" items</li>
                 <li><strong>Avoid:</strong> Expired items (red)</li>
               </ol>
-              
+
               <h3 className="font-semibold mb-2">Before Distribution</h3>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2 mb-4">
                 <li>Check the <strong>Expiring</strong> filter to see priority items</li>
                 <li>Verify expiry dates (shown in DD/MM/YYYY format)</li>
                 <li>Note batch numbers for tracking</li>
               </ul>
-              
+
               <h3 className="font-semibold mb-2">After Distribution</h3>
               <ol className="list-decimal list-inside space-y-1 text-gray-700 ml-2">
                 <li>Edit the item</li>
@@ -306,6 +306,19 @@ export function UserGuideDialog({ open, onOpenChange }: UserGuideDialogProps) {
                   </ul>
                 </div>
               </div>
+            </section>
+
+            {/* Creating Users */}
+            <section>
+              <h2 className="text-xl font-semibold mb-3">Creating Users (Admins)</h2>
+              <p className="text-gray-700 mb-3">
+                When creating a new user account for PantryKeeper, you must ensure they have the correct tenant mapping:
+              </p>
+              <ol className="list-decimal list-inside space-y-2 text-gray-700 ml-2 mb-4">
+                <li>Create the user in the Supabase dashboard</li>
+                <li>You <strong>have to add the mapping</strong> <code>bukit_merah</code> to their tenant configuration in <code>user_schema_mapping</code></li>
+                <li>If this mapping is missing, the new user will be unauthorized and unable to access the inventory.</li>
+              </ol>
             </section>
 
             {/* Tips & Best Practices */}
