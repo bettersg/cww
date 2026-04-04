@@ -337,6 +337,19 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
             </div>
           </section>
 
+          {/* Creating Users */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900">Creating Users (Admins)</h2>
+            <p className="text-gray-700 mb-3">
+              When creating a new user account for PantryKeeper, you must ensure they have the correct tenant mapping:
+            </p>
+            <ol className="list-decimal list-inside space-y-2 text-gray-700 ml-2 mb-4">
+              <li>Create the user in the Supabase dashboard</li>
+              <li>You <strong>have to add the mapping</strong> <code>bukit_merah</code> to their tenant configuration in <code>user_schema_mapping</code></li>
+              <li>If this mapping is missing, the new user will be unauthorized and unable to access the inventory.</li>
+            </ol>
+          </section>
+
           {/* Tips & Best Practices */}
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Tips & Best Practices</h2>
