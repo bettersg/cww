@@ -1,7 +1,0 @@
-.git
-*Dockerfile*
-node_modules
-build
-dist
-documentation
-*.md

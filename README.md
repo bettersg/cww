@@ -8,14 +8,6 @@ Run `npm i` to install the dependencies.
 
 Run `npm run dev` to start the development server.
 
-For running the code locally in a container:
-
-```sh
-docker build -f Dockerfile.dev -t <image>:<tag>
-
-docker run -d -p 3000:3000 <image>:<tag>
-```
-
 ## Deployment
 
 ### Frontend
