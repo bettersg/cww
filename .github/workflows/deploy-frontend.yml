@@ -21,12 +21,12 @@ jobs:
       actions: read
     uses: ./.github/workflows/reusable-deploy-frontend.yml
     with:
-      firebase_target: 'bukit-merah'
-      tenant: 'bukit_merah'
       environment: ${{ github.ref_name }}
+      firebase_project_id: ${{ vars.FIREBASE_PROJECT_ID }}
+      firebase_target: 'bukit-merah'
+      supabase_project_id: ${{ vars.SUPABASE_PROJECT_ID }}
+      tenant: 'bukit_merah'
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
-      firebase_project_id: ${{ vars.FIREBASE_PROJECT_ID }}
       firebase_service_account_key: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-      supabase_project_id: ${{ vars.SUPABASE_PROJECT_ID }}
       supabase_public_anon_key: ${{ secrets.SUPABASE_PUBLIC_ANON_KEY }}
