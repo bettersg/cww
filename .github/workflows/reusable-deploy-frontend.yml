@@ -9,12 +9,6 @@ on:
         required: false
         type: string
         default: '25.8.2'
-      supabase_project_id:
-        type: string
-        required: true
-      firebase_project_id:
-        type: string
-        required: true
       firebase_target:
         required: true
         type: string
@@ -22,11 +16,15 @@ on:
         required: true
         type: string
     secrets:
-      supabase_public_anon_key:
-        required: true
       gh_token:
         required: true
+      firebase_project_id:
+        required: true
       firebase_service_account_key:
+        required: true
+      supabase_project_id:
+        required: true
+      supabase_public_anon_key:
         required: true
     outputs:
       build-status:
@@ -54,7 +52,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          VITE_PROJECT_ID: ${{ inputs.supabase_project_id }}
+          VITE_PROJECT_ID: ${{ secrets.supabase_project_id }}
           VITE_TENANT_ID: ${{ inputs.tenant }}
           VITE_PUBLIC_ANON_KEY: ${{ secrets.supabase_public_anon_key }}
       - run: echo "Deploying to target ${{ inputs.firebase_target }}"
@@ -62,7 +60,7 @@ jobs:
         with:
           repoToken: "${{ secrets.gh_token }}"
           firebaseServiceAccount: "${{ secrets.firebase_service_account_key }}"
-          projectId: "${{ inputs.firebase_project_id }}"
+          projectId: "${{ secrets.firebase_project_id }}"
           target: ${{ inputs.firebase_target }}
           channelId: live
         env:
