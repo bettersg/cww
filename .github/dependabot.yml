@@ -4,8 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    target-branch: "staging"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "monthly"
+    target-branch: "staging"
     open-pull-requests-limit: 8
