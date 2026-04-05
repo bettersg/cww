@@ -26,7 +26,7 @@ jobs:
       environment: ${{ github.ref_name }}
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
-      firebase_project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+      firebase_project_id: ${{ vars.FIREBASE_PROJECT_ID }}
       firebase_service_account_key: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-      supabase_project_id: ${{ secrets.SUPABASE_PROJECT_ID }}
+      supabase_project_id: ${{ vars.SUPABASE_PROJECT_ID }}
       supabase_public_anon_key: ${{ secrets.SUPABASE_PUBLIC_ANON_KEY }}
