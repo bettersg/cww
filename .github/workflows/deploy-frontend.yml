@@ -19,7 +19,6 @@ jobs:
       contents: read
       id-token: write
       actions: read
-    if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/reusable-deploy-frontend.yml
     with:
       environment: ${{ github.ref_name }}
