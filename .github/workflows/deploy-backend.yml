@@ -7,7 +7,6 @@ on:
 
 jobs:
   deploy-backend:
-    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name }}
     permissions:
