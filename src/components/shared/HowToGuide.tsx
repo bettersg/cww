@@ -2,6 +2,12 @@ import React from "react";
 import { ArrowLeft, CheckCircle, AlertCircle, Package, Search } from "lucide-react";
 import { Button } from "../ui/button";
 import { PantryKeeperLogo } from "./PantryKeeperLogo";
+import UserTenantImage from "../../assets/user-tenant.png";
+import SupabaseBukitMerahImage from "../../assets/supabase-bukit-merah.png";
+import SupabaseChooseUserIdImage from "../../assets/supabase-choose-user-id.png";
+import SupabaseChooseUserId2Image from "../../assets/supabase-choose-user-id-2.png";
+import SupabaseAddUserTenantImage from "../../assets/supabase-add-user-tenant.png";
+import SupabaseTableEditorImage from "../../assets/supabase-table-editor.png";
 
 interface HowToGuideProps {
   onBack: () => void;
@@ -343,9 +349,33 @@ export function HowToGuide({ onBack }: HowToGuideProps) {
             <p className="text-gray-700 mb-3">
               When creating a new user account for PantryKeeper, you must ensure they have the correct tenant mapping:
             </p>
-            <ol className="list-decimal list-inside space-y-2 text-gray-700 ml-2 mb-4">
+            <ol className="list-decimal list-inside space-y-4 text-gray-700 ml-2 mb-4">
               <li>Create the user in the Supabase dashboard</li>
-              <li>You <strong>have to add the mapping</strong> <code>bukit_merah</code> to their tenant configuration in <code>user_schema_mapping</code></li>
+              <li>
+                You <strong>have to add the mapping</strong> <code>bukit_merah</code> to their tenant configuration in <code>user_schema_mapping</code>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pr-4">
+                  <div className="space-y-3 mt-4">
+                    <p className="font-medium text-sm text-gray-800">a) Navigate to Supabase &gt; Table Editor</p>
+                    <img src={SupabaseTableEditorImage} alt="Table Editor" className="rounded shadow-sm border border-gray-200" />
+                  </div>
+                  <div className="space-y-3 mt-4">
+                    <p className="font-medium text-sm text-gray-800">b) For table user_schema_mapping, click on INSERT</p>
+                    <img src={SupabaseAddUserTenantImage} alt="Add User Tenant" className="rounded shadow-sm border border-gray-200" />
+                  </div>
+                  <div className="space-y-3 mt-4">
+                    <p className="font-medium text-sm text-gray-800">c) Click on choose user</p>
+                    <img src={SupabaseChooseUserIdImage} alt="Choose User ID" className="rounded shadow-sm border border-gray-200" />
+                  </div>
+                  <div className="space-y-3 mt-4">
+                    <p className="font-medium text-sm text-gray-800">d) Select a user</p>
+                    <img src={SupabaseChooseUserId2Image} alt="Select User ID" className="rounded shadow-sm border border-gray-200" />
+                  </div>
+                  <div className="space-y-3 mt-4">
+                    <p className="font-medium text-sm text-gray-800">e) Enter "clementi" OR "bukit_merah" to grant access to corresponding tenant</p>
+                    <img src={SupabaseBukitMerahImage} alt="Bukit Merah" className="rounded shadow-sm border border-gray-200" />
+                  </div>
+                </div>
+              </li>
               <li>If this mapping is missing, the new user will be unauthorized and unable to access the inventory.</li>
             </ol>
           </section>
