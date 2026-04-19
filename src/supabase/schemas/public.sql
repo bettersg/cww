@@ -1,12 +1,6 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
-CREATE TABLE public.kv_store_991766ee (
-  key text NOT NULL,
-  value jsonb NOT NULL,
-  CONSTRAINT kv_store_991766ee_pkey PRIMARY KEY (key)
-);
-
 -- Create the mapping table in public schema
 CREATE TABLE IF NOT EXISTS public.user_schema_mapping (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
