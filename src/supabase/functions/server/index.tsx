@@ -35,8 +35,11 @@ function handleError(c: any, error: unknown, userMessage: string, statusCode = 5
 
   if (Deno.env.get('SLACK_NOTIFICATION_ENABLED') === 'true') {
     const route = `[${c.req.method}] ${c.req.path}`;
-    const slackMessage = `[SUPABASE EDGE FUNCTION ERROR]\nProject: ${Deno.env.get('SUPABASE_URL')}\nRequest: ${route}\n${userMessage}: ${String(error)}`;
+    const errorString = String(error);
+    const origin = c.req.header('origin') || c.req.header('referer') || 'Unknown Origin';
+    const slackMessage = `[SUPABASE EDGE FUNCTION ERROR]\nProject: ${Deno.env.get('SUPABASE_URL')}\nOrigin: ${origin}\nRequest: ${route}\nError: ${userMessage}: ${errorString}`;
     notifySlackError(slackMessage).catch(console.error);
+
   }
 
   // In production, hide internal details
