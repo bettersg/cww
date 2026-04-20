@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { toast } from 'sonner@2.0.3';
 import { api } from '../../../services/api';
 import type { InventoryItem } from '../../../types';
-import { useAuth } from '../../../contexts/AuthContext';
 
 export interface InventoryFormData {
   name: string;
@@ -10,6 +9,7 @@ export interface InventoryFormData {
   quantity: string;
   expiry: string;
   donor: string;
+  modifiedBy: string;
   expiringThreshold: string;
   hasNoExpiry: boolean;
 }
@@ -18,6 +18,7 @@ export interface InventoryFormErrors {
   name: string;
   quantity: string;
   expiry: string;
+  modifiedBy: string;
 }
 
 export interface UseInventoryReturn {
@@ -55,6 +56,7 @@ const initialFormData: InventoryFormData = {
   quantity: "",
   expiry: "",
   donor: "",
+  modifiedBy: "",
   expiringThreshold: "7",
   hasNoExpiry: false,
 };
@@ -63,10 +65,10 @@ const initialFormErrors: InventoryFormErrors = {
   name: "",
   quantity: "",
   expiry: "",
+  modifiedBy: "",
 };
 
 export function useInventory(): UseInventoryReturn {
-  const { user } = useAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState<InventoryFormData>(initialFormData);
@@ -95,6 +97,7 @@ export function useInventory(): UseInventoryReturn {
       quantity: item.quantity.toString(),
       expiry: item.expiry || "",
       donor: item.donor || "",
+      modifiedBy: "",
       expiringThreshold: item.expiringThreshold.toString(),
       hasNoExpiry: !item.expiry,
     });
@@ -110,6 +113,7 @@ export function useInventory(): UseInventoryReturn {
       quantity: item.quantity.toString(),
       expiry: item.expiry || "",
       donor: item.donor || "",
+      modifiedBy: "",
       expiringThreshold: item.expiringThreshold.toString(),
       hasNoExpiry: !item.expiry,
     });
@@ -146,6 +150,7 @@ export function useInventory(): UseInventoryReturn {
       name: "",
       quantity: "",
       expiry: "",
+      modifiedBy: "",
     };
 
     // Validate fields
@@ -172,6 +177,11 @@ export function useInventory(): UseInventoryReturn {
       hasErrors = true;
     }
 
+    if (!formData.modifiedBy.trim()) {
+      errors.modifiedBy = "Please enter your name";
+      hasErrors = true;
+    }
+
     if (hasErrors) {
       setFormErrors(errors);
       toast.error("Please fix the errors in the form");
@@ -193,7 +203,7 @@ export function useInventory(): UseInventoryReturn {
           expiry: expiryValue,
           status,
           expiringThreshold: threshold,
-          lastModifiedBy: user?.name || "System",
+          lastModifiedBy: formData.modifiedBy.trim(),
           lastModifiedDate: currentDate,
         };
         
@@ -202,6 +212,7 @@ export function useInventory(): UseInventoryReturn {
         closeAddDialog();
         return updatedItem;
       } else {
+        // Note: Server will generate secure UUID, so we don't send 'id'
         const newItem: any = {
           name: formData.name.trim(),
           description: formData.description.trim(),
@@ -211,7 +222,7 @@ export function useInventory(): UseInventoryReturn {
           batchNumber: generateBatchNumber(formData.name.trim()),
           receivedDate: currentDate,
           donor: formData.donor.trim() || undefined,
-          lastModifiedBy: user?.name || "System",
+          lastModifiedBy: formData.modifiedBy.trim(),
           lastModifiedDate: currentDate,
           expiringThreshold: threshold,
         };
