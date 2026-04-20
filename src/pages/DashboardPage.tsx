@@ -34,6 +34,7 @@ import {
     StatsCards,
 } from "../features/search-filter";
 import { InventoryDisplay } from "../features/inventory-display";
+import { UserGuideDialog } from "../features/user-guide";
 import { useExportActions } from "../features/export-actions";
 import { getItemStatus, calculateStats } from "../utils/inventoryHelpers";
 import { ChangePasswordDialog } from "../components/auth/ChangePasswordDialog";
@@ -59,6 +60,7 @@ export default function DashboardPage() {
     const { user: currentUser, signOut } = useAuth();
     const [items, setItems] = useState<InventoryItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [userGuideOpen, setUserGuideOpen] = useState(false);
     const [showHowToGuide, setShowHowToGuide] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
     const navigate = useNavigate();
@@ -350,6 +352,11 @@ export default function DashboardPage() {
             </div>
 
             <Toaster richColors position="top-right" />
+
+            <UserGuideDialog
+                open={userGuideOpen}
+                onOpenChange={setUserGuideOpen}
+            />
 
             <footer className="mt-16 mb-20 md:mb-0 border-t border-gray-200 pt-8">
                 <div className="max-w-6xl mx-auto">
