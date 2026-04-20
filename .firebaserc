@@ -7,16 +7,14 @@
   "targets": {
     "cww-pantry-keeper": {
       "hosting": {
-        "bukit-merah": [
-          "cww-pantry-keeper"
-        ]
+        "bukit-merah": ["cww-pantry-keeper"],
+        "clementi": ["clementi-pantry-keeper"]
       }
     },
     "cww-pantry-keeper-dev": {
       "hosting": {
-        "bukit-merah": [
-          "cww-pantry-keeper-dev"
-        ]
+        "bukit-merah": ["cww-pantry-keeper-dev"],
+        "clementi": ["clementi-pantry-keeper-dev"]
       }
     }
   },

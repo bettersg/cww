@@ -11,6 +11,18 @@
       "frameworksBackend": {
         "region": "asia-east1"
       }
+    },
+    {
+      "target": "clementi",
+      "public": "build",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [{
+        "source": "**",
+        "destination": "/index.html"
+      }],
+      "frameworksBackend": {
+        "region": "asia-east1"
+      }
     }
   ]
 }
