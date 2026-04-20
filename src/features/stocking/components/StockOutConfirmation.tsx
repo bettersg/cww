@@ -4,7 +4,6 @@ import { Button } from '../../../components/ui/button';
 import { formatDate } from '../../../utils/formatters/dateFormatter';
 import type { InventoryItem } from '../../../types';
 import type { UseStockOutReturn } from '../hooks/useStockOut';
-import { useAuth } from '../../../contexts/AuthContext';
 
 interface StockOutConfirmationProps {
   hook: UseStockOutReturn;
@@ -28,7 +27,6 @@ const getExpiryTextColor = (status: string) => {
 };
 
 export function StockOutConfirmation({ hook, items, onConfirm }: StockOutConfirmationProps) {
-  const { user } = useAuth();
   return (
     <Dialog open={hook.isConfirmationOpen} onOpenChange={hook.closeConfirmation}>
       <DialogContent className="sm:max-w-lg w-[calc(100%-2rem)] max-h-[90vh] flex flex-col">
@@ -43,7 +41,7 @@ export function StockOutConfirmation({ hook, items, onConfirm }: StockOutConfirm
           {/* Stock Out By */}
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
             <p className="text-sm text-gray-600">Stocked out by:</p>
-            <p className="font-medium break-words">{user?.name || "System"}</p>
+            <p className="font-medium break-words">{hook.stockOutBy}</p>
           </div>
 
           {/* Items Summary */}

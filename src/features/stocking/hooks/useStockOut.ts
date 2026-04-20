@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { toast } from 'sonner@2.0.3';
 import { api } from '../../../services/api';
 import type { InventoryItem } from '../../../types';
-import { useAuth } from '../../../contexts/AuthContext';
 
 export interface UseStockOutReturn {
   // Dialog state
@@ -12,6 +11,7 @@ export interface UseStockOutReturn {
   
   // Form state
   selectedItems: Record<string, number>;
+  stockOutBy: string;
   searchQuery: string;
   
   // Actions
@@ -19,6 +19,7 @@ export interface UseStockOutReturn {
   closeDialog: () => void;
   openConfirmation: () => void;
   closeConfirmation: () => void;
+  setStockOutBy: (name: string) => void;
   setSearchQuery: (query: string) => void;
   toggleItemSelection: (itemId: string) => void;
   changeQuantity: (itemId: string, quantity: number) => void;
@@ -32,10 +33,10 @@ export interface UseStockOutReturn {
 }
 
 export function useStockOut(): UseStockOutReturn {
-  const { user } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Record<string, number>>({});
+  const [stockOutBy, setStockOutBy] = useState("");
   const [isStockingOut, setIsStockingOut] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -44,6 +45,7 @@ export function useStockOut(): UseStockOutReturn {
   const closeDialog = () => {
     setIsDialogOpen(false);
     setSelectedItems({});
+    setStockOutBy("");
     setSearchQuery("");
   };
 
@@ -52,6 +54,7 @@ export function useStockOut(): UseStockOutReturn {
 
   const resetSelection = () => {
     setSelectedItems({});
+    setStockOutBy("");
     setSearchQuery("");
   };
 
@@ -83,7 +86,10 @@ export function useStockOut(): UseStockOutReturn {
   };
 
   const executeStockOut = async (items: InventoryItem[]) => {
-    const stockOutUserName = user?.name || "System";
+    if (!stockOutBy.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
 
     const stockOutItems = Object.entries(selectedItems)
       .filter(([_, quantity]) => quantity > 0)
@@ -96,7 +102,7 @@ export function useStockOut(): UseStockOutReturn {
 
     try {
       setIsStockingOut(true);
-      const result = await api.stockOutItems(stockOutItems, stockOutUserName);
+      const result = await api.stockOutItems(stockOutItems, stockOutBy.trim());
       
       // Show success message
       let message = result.message || `Successfully stocked out ${stockOutItems.length} items`;
@@ -155,6 +161,7 @@ export function useStockOut(): UseStockOutReturn {
     
     // Form state
     selectedItems,
+    stockOutBy,
     searchQuery,
     
     // Actions
@@ -162,6 +169,7 @@ export function useStockOut(): UseStockOutReturn {
     closeDialog,
     openConfirmation,
     closeConfirmation,
+    setStockOutBy,
     setSearchQuery,
     toggleItemSelection,
     changeQuantity,

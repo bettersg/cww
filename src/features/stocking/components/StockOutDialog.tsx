@@ -64,6 +64,20 @@ export function StockOutDialog({ hook, items }: StockOutDialogProps) {
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col gap-3 px-6">
+          <div className="space-y-2">
+            <Label htmlFor="stocked-out-by" className="text-base">
+              Your Name *
+            </Label>
+            <Input
+              id="stocked-out-by"
+              placeholder="Enter your name"
+              value={hook.stockOutBy}
+              onChange={(e) => hook.setStockOutBy(e.target.value)}
+              className="h-11 text-base"
+              required
+            />
+          </div>
+
           <div className="flex-1 overflow-hidden flex flex-col min-h-0">
             {/* Sticky header with label and search */}
             <div className="sticky top-0 bg-white z-10 pb-3 mb-2">
@@ -217,7 +231,7 @@ export function StockOutDialog({ hook, items }: StockOutDialogProps) {
           </DialogClose>
           <Button
             onClick={hook.openConfirmation}
-            disabled={hook.isStockingOut || hook.selectedCount === 0}
+            disabled={hook.isStockingOut || hook.selectedCount === 0 || !hook.stockOutBy.trim()}
             className="h-12 flex-1 text-base"
           >
             Confirm Selection
