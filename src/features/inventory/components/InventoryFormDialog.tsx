@@ -215,31 +215,6 @@ export function InventoryFormDialog({ hook, onSubmit }: InventoryFormDialogProps
                 className="h-12 text-base"
               />
             </div>
-
-            <div className="space-y-3">
-              <Label htmlFor="modified-by" className="text-base">
-                {hook.editingItem ? "Modified By *" : "Added By *"}
-              </Label>
-              <Input
-                id="modified-by"
-                placeholder="Enter your name"
-                value={hook.formData.modifiedBy}
-                onChange={(e) => {
-                  hook.updateFormData('modifiedBy', e.target.value);
-                  if (hook.formErrors.modifiedBy) {
-                    hook.clearFormError('modifiedBy');
-                  }
-                }}
-                className={`h-12 text-base ${hook.formErrors.modifiedBy ? "border-red-500" : ""}`}
-                aria-invalid={!!hook.formErrors.modifiedBy}
-              />
-              {hook.formErrors.modifiedBy && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {hook.formErrors.modifiedBy}
-                </p>
-              )}
-            </div>
           </div>
 
           <DialogFooter className="gap-3 pt-4 border-t sm:flex-row flex-col-reverse">
