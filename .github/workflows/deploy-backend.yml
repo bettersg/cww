@@ -21,9 +21,13 @@ jobs:
         with:
           fetch-depth: 1
       - name: Install Supabase CLI
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v2
         with:
           version: latest
+      - name: Set secrets
+        run: |
+          supabase secrets set --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} \
+            ALLOWED_ORIGINS=${{ vars.SUPABASE_ALLOWED_ORIGINS }}
       - name: Link Supabase project
         working-directory: ./src
         run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
