@@ -26,6 +26,8 @@ on:
         required: true
       supabase_public_anon_key:
         required: true
+      appsignal_api_key:
+        required: true
     outputs:
       build-status:
         description: "The status of the build job"
@@ -55,7 +57,8 @@ jobs:
           VITE_PROJECT_ID: ${{ secrets.supabase_project_id }}
           VITE_TENANT_ID: ${{ inputs.tenant }}
           VITE_PUBLIC_ANON_KEY: ${{ secrets.supabase_public_anon_key }}
-      - run: echo "Deploying to target ${{ inputs.firebase_target }}"
+          VITE_APPSIGNAL_API_KEY: ${{ secrets.appsignal_api_key }}
+      - run: echo "Deploying to target ${{ inputs.fir${{ secrets.supabase_public_anon_key }}ebase_target }}"
       - uses: FirebaseExtended/action-hosting-deploy@e2eda2e106cfa35cdbcf4ac9ddaf6c4756df2c8c # v0.10.0
         with:
           repoToken: "${{ secrets.gh_token }}"
