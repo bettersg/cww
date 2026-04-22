@@ -16,9 +16,10 @@ try {
     appsignal.setCustomData({
         tenant: tenantId
     });
-    appsignal.use(plugin()) // capture unhandled errors
 } catch (error) {
   console.error("Error initialising appsignal plugins:", error);
+} finally {
+    appsignal.use(plugin()) // capture unhandled errors
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
