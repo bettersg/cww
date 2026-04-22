@@ -27,7 +27,8 @@ jobs:
       - name: Set secrets
         run: |
           supabase secrets set --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} \
-            ALLOWED_ORIGINS=${{ vars.SUPABASE_ALLOWED_ORIGINS }}
+            ALLOWED_ORIGINS=${{ vars.SUPABASE_ALLOWED_ORIGINS }} \
+            APPSIGNAL_API_KEY=${{ secrets.SUPABASE_APPSIGNAL_API_KEY }}
       - name: Link Supabase project
         working-directory: ./src
         run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
