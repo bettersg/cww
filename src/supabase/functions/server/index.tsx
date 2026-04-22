@@ -5,7 +5,6 @@ import * as kv from "./kv_store.tsx";
 import * as changelog from "./changelog.tsx";
 import * as rateLimit from "./rate_limiter.tsx";
 import * as metaAudit from "./meta_audit.tsx";
-import { notifySlackError } from "./slack_notify.tsx";
 
 const functionName = "make-server-991766ee";
 const app = new Hono().basePath(`/${functionName}`);
@@ -29,17 +28,9 @@ app.use(
 );
 
 // Utility: Sanitize error messages for production
-function handleError(c: any, error: unknown, userMessage: string, statusCode = 500) {
+function handleError(error: unknown, userMessage: string, statusCode = 500) {
   // Always log full error for debugging
   console.error(`[ERROR] ${userMessage}:`, error);
-
-  if (Deno.env.get('SLACK_NOTIFICATION_ENABLED') === 'true') {
-    const route = `[${c.req.method}] ${c.req.path}`;
-    const errorString = String(error);
-    const origin = c.req.header('origin') || c.req.header('referer') || 'Unknown Origin';
-    const slackMessage = `[SUPABASE EDGE FUNCTION ERROR]\nProject: ${Deno.env.get('SUPABASE_URL')}\nOrigin: ${origin}\nRequest: ${route}\nError: ${userMessage}: ${errorString}`;
-    notifySlackError(slackMessage).catch(console.error);
-  }
 
   // In production, hide internal details
   const isDev = Deno.env.get('ENVIRONMENT') === 'development';
@@ -73,7 +64,7 @@ app.get("/items", async (c) => {
     console.log(`Fetched ${items.length} inventory items`);
     return c.json({ items: items || [] });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to fetch inventory items");
+    const errorResponse = handleError(error, "Failed to fetch inventory items");
     return c.json(errorResponse, 500);
   }
 });
@@ -92,7 +83,7 @@ app.get("/items/:id", async (c) => {
 
     return c.json({ item });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to fetch inventory item");
+    const errorResponse = handleError(error, "Failed to fetch inventory item");
     return c.json(errorResponse, 500);
   }
 });
@@ -228,7 +219,7 @@ app.post("/items", async (c) => {
 
     return c.json({ item, message: "Item created successfully" }, 201);
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to create inventory item");
+    const errorResponse = handleError(error, "Failed to create inventory item");
     return c.json(errorResponse, 500);
   }
 });
@@ -294,7 +285,7 @@ app.put("/items/:id", async (c) => {
 
     return c.json({ item: updatedItem, message: "Item updated successfully" });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to update inventory item");
+    const errorResponse = handleError(error, "Failed to update inventory item");
     return c.json(errorResponse, 500);
   }
 });
@@ -330,7 +321,7 @@ app.delete("/items/:id", async (c) => {
 
     return c.json({ message: "Item deleted successfully" });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to delete inventory item");
+    const errorResponse = handleError(error, "Failed to delete inventory item");
     return c.json(errorResponse, 500);
   }
 });
@@ -394,8 +385,8 @@ app.post("/distribute", async (c) => {
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to distribute items");
-    return c.json(errorResponse, 500);
+    console.error("Error during batch distribution:", error);
+    return c.json({ error: "Failed to distribute items", details: String(error) }, 500);
   }
 });
 
@@ -494,8 +485,8 @@ app.post("/stock-out", async (c) => {
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to stock out items");
-    return c.json(errorResponse, 500);
+    console.error("Error during stock out operation:", error);
+    return c.json({ error: "Failed to stock out items", details: String(error) }, 500);
   }
 });
 
@@ -535,8 +526,8 @@ app.post("/initialize", async (c) => {
     console.log(`Initialized database with ${sampleItems.length} sample items`);
     return c.json({ message: "Database initialized successfully", itemCount: sampleItems.length });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to initialize database");
-    return c.json(errorResponse, 500);
+    console.error("Error initializing database:", error);
+    return c.json({ error: "Failed to initialize database", details: String(error) }, 500);
   }
 });
 
@@ -630,7 +621,7 @@ app.get("/changelog", async (c) => {
       }
     });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to fetch changelog entries");
+    const errorResponse = handleError(error, "Failed to fetch changelog entries");
     return c.json(errorResponse, 500);
   }
 });
@@ -744,8 +735,8 @@ app.get("/changelog/export", async (c) => {
       },
     });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to export changelog");
-    return c.json(errorResponse, 500);
+    console.error("Error exporting changelog:", error);
+    return c.json({ error: "Failed to export changelog", details: String(error) }, 500);
   }
 });
 
@@ -808,7 +799,7 @@ app.delete("/changelog", async (c) => {
       entriesDeleted: count
     });
   } catch (error) {
-    const errorResponse = handleError(c, error, "Failed to clear changelog");
+    const errorResponse = handleError(error, "Failed to clear changelog");
     return c.json(errorResponse, 500);
   }
 });
