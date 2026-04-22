@@ -11,10 +11,6 @@ const tenantId = import.meta.env.VITE_TENANT_ID;
 const appsignal = new Appsignal({
     key: appsignalApiKey,
 });
-
-appsignal.setCustomData({
-    tenant: tenantId
-});
 appsignal.use(plugin()) // capture unhandled errors
 
 createRoot(document.getElementById("root")!).render(<App />);
