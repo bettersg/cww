@@ -1,7 +1,24 @@
 
-  import { createRoot } from "react-dom/client";
-  import App from "./App.tsx";
-  import "./index.css";
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import Appsignal from "@appsignal/javascript";
+import { plugin } from `@appsignal/plugin-window-events`;
+import "./index.css";
 
-  createRoot(document.getElementById("root")!).render(<App />);
-  
+const appsignalApiKey = import.meta.env.VITE_APPSIGNAL_API_KEY;
+const tenantId = import.meta.env.VITE_TENANT_ID;
+
+const appsignal = new Appsignal({
+    key: appsignalApiKey,
+});
+
+try {
+    appsignal.setCustomData({
+        tenant: tenantId
+    });
+    appsignal.use(plugin()) // capture unhandled errors
+} catch (error) {
+  console.error("Error initialising appsignal plugins:", error);
+}
+
+createRoot(document.getElementById("root")!).render(<App />);
