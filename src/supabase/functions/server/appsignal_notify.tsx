@@ -39,6 +39,7 @@ export const notifyAppSignalError = async (
 
     // In @appsignal/javascript, we use sendError
     appsignal.sendError(errorObj, (span: any) => {
+	    span.setAction(String(error));
       span.setTags({
         route,
         userMessage,
