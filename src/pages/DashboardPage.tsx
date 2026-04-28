@@ -305,6 +305,25 @@ export default function DashboardPage() {
                         </Button>
                     </div>
 
+                    {/* Mobile Action Buttons */}
+                    <div className="md:hidden fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+                        <Button
+                            variant="outline"
+                            className="h-16 w-16 rounded-full shadow-lg p-0 focus-visible:ring-4 focus-visible:ring-offset-2 bg-white text-[#F58220] border-[#F58220] hover:bg-orange-50"
+                            onClick={stockOut.openDialog}
+                            aria-label="Stock Out Items"
+                        >
+                            <Minus className="w-6 h-6" />
+                        </Button>
+                        <Button
+                            className="h-16 w-16 rounded-full shadow-lg p-0 focus-visible:ring-4 focus-visible:ring-offset-2"
+                            onClick={inventory.openAddDialog}
+                            aria-label="Stock In Items"
+                        >
+                            <Plus className="w-6 h-6" />
+                        </Button>
+                    </div>
+
                     <InventoryFeature
                         hook={inventory}
                         items={items}
