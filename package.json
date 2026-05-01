@@ -62,7 +62,7 @@
             "jest": "^30.3.0",
             "jest-environment-jsdom": "^30.3.0",
             "ts-jest": "^29.4.6",
-            "vite": "~7.3.1"
+            "vite": "~8.0.10"
       },
       "scripts": {
             "dev": "vite",
