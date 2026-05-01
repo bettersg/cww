@@ -49,7 +49,7 @@
             "recharts": "^2.15.2",
             "sonner": "^2.0.3",
             "tailwind-merge": "*",
-            "ts-jest-mock-import-meta": "^1.3.1",
+            "ts-jest-mock-import-meta": "^1.3.2",
             "vaul": "^1.1.2"
       },
       "devDependencies": {
