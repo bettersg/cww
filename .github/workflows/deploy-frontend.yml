@@ -14,34 +14,23 @@ on:
     #   - '.firebaserc'
 
 jobs:
-  deploy-bukit-merah:
+  deploy:
     permissions:
       contents: read
       id-token: write
       actions: read
+    strategy:
+      matrix:
+        workspace:
+          - firebase_target: 'bukit-merah'
+            tenant: 'bukit_merah'
+          - firebase_target: 'clementi'
+            tenant: 'clementi'
     uses: ./.github/workflows/reusable-deploy-frontend.yml
     with:
       environment: ${{ github.ref_name }}
-      firebase_target: 'bukit-merah'
-      tenant: 'bukit_merah'
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
-      firebase_project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-      firebase_service_account_key: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-      supabase_project_id: ${{ secrets.SUPABASE_PROJECT_ID }}
-      supabase_public_anon_key: ${{ secrets.SUPABASE_PUBLIC_ANON_KEY }}
-      appsignal_api_key: ${{ secrets.FIREBASE_APPSIGNAL_API_KEY }}
-
-  deploy-clementi:
-    permissions:
-      contents: read
-      id-token: write
-      actions: read
-    uses: ./.github/workflows/reusable-deploy-frontend.yml
-    with:
-      environment: ${{ github.ref_name }}
-      firebase_target: 'clementi'
-      tenant: 'clementi'
+      firebase_target: ${{ matrix.workspace.firebase_target }}
+      tenant: ${{ matrix.workspace.tenant }}
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
       firebase_project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
