@@ -21,7 +21,7 @@ jobs:
       actions: read
     strategy:
       matrix:
-        workspace:
+        app:
           - firebase_target: 'bukit-merah'
             tenant: 'bukit_merah'
           - firebase_target: 'clementi'
@@ -29,8 +29,8 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-frontend.yml
     with:
       environment: ${{ github.ref_name }}
-      firebase_target: ${{ matrix.workspace.firebase_target }}
-      tenant: ${{ matrix.workspace.tenant }}
+      firebase_target: ${{ matrix.app.firebase_target }}
+      tenant: ${{ matrix.app.tenant }}
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
       firebase_project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
