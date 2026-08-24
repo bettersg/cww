@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "staging"
+    open-pull-requests-limit: 3
+    groups:
+      all-actions:
+        patterns: ["*"]
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
